@@ -29,5 +29,6 @@
   <!-- Import Bootstrap source -->
   <script src="lib/bootstrap/js/bootstrap.min.js"></script>
   
+  <p>Welcome to homepage</p>
 </body>
 </html>
