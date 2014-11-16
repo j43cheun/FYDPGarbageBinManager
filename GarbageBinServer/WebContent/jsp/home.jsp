@@ -14,14 +14,15 @@
   
 </head>
 <body>
-  <!-- Define HTML for navbar -->
+  <!-- Define HTML for navbar 
   <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
     <div class="container-fluid">
       <div class="navbar-header">
         <a class="navbar-brand" href="#">Garbage Bin Server</a>
       </div>
     </div>
-  </nav>
+  </nav> -->
+  
   
   <!-- Import JQuery source -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
