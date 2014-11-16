@@ -5,6 +5,14 @@ public class GPSCoordinates implements Coordinates {
   private double m_longitude;
   
   public GPSCoordinates( double latitude, double longitude ) {
+    if( latitude < -90 || latitude > 90 ) {
+      throw new IllegalArgumentException( "Latitude argument outside of valid range [-90, 90]!" );
+    }
+    
+    if( longitude < -180 || latitude > 180 ) {
+      throw new IllegalArgumentException( "Longitude argument is outside of valid range [-180, 180]!" );
+    }
+    
     m_latitude = latitude;
     m_longitude = longitude;
   }
