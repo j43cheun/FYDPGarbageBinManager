@@ -6,7 +6,7 @@ public class GPSCoordinates implements Coordinates {
   
   public GPSCoordinates( double latitude, double longitude ) {
     if( latitude < -90 || latitude > 90 ) {
-      throw new IllegalArgumentException( "Latitude argument outside of valid range [-90, 90]!" );
+      throw new IllegalArgumentException( "Latitude argument is outside of valid range [-90, 90]!" );
     }
     
     if( longitude < -180 || latitude > 180 ) {
