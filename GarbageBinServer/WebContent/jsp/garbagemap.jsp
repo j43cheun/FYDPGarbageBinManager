@@ -35,23 +35,41 @@
       padding-top:50px;
       padding-bottom: 50px;
     }
-    .h3-align {
-  margin-top: -4px;
-  margin-bottom: 0px;
- }
   </style>
 </head>
-<body>
-  <jsp:include page="navheader.jsp"/>
-  <div id="map-canvas"></div>
-  <div class="navbar navbar-default navbar-fixed-bottom">
+<body> 
+  <div class="navbar navbar-inverse navbar-fixed-top" id="navheader">
     <div class="container">
+      <a href="home.jsp" class="navbar-brand"> 
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+        Garbage NAVIGATOR
+      </a>
+      <button class="navbar-toggle" data-toggle="collapse"
+        data-target=".navHeaderCollapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
       <div class="collapse navbar-collapse navHeaderCollapse">
-      <form class="navbar-form navbar-left">
-        <div class="input-group">
-          <input type="text" class="form-control" name="username" placeholder="GPS Coordinates">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#TODO">Garbage BINS</a></li>
+          <li class="active"><a href="garbagemap.jsp">Garbage MAP</a></li>
+          <li><a href="#TODO">Garbage SPOTS</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div id="map-canvas"></div>
+  <div class="navbar navbar-inverse navbar-fixed-bottom">
+    <div class="container">
+      <form role="form">
+        <div class="input-group" style="padding-top: 7px">
+          <span class="input-group-addon">
+            <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+          </span>
+          <input type="text" class="form-control" name="garbageMapForm" placeholder="Latitude, Longitude">
           <div class="input-group-btn">
-            <button type="submit" class="btn btn-info">
+            <button type="submit" class="btn btn-primary">
               <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
               Search
             </button>
@@ -59,21 +77,13 @@
               <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
               Add
             </button>
+            <button type="submit" class="btn btn-warning">
+              <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+              Controls
+            </button>
           </div>
         </div>
       </form>
-      <ul class="nav navbar-nav navbar-right">
-        <label class="checkbox-inline">
-          <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
-        </label>
-        <label class="checkbox-inline">
-          <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
-        </label>
-        <label class="checkbox-inline">
-          <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
-        </label>  
-      </ul>
-      </div>
     </div>
   </div>
   <!-- Import JQuery JavaScript Library -->
