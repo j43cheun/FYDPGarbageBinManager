@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <!-- Enable responsive Bootstrap site -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Garbage NAVIGATOR - Garbage MAP</title>  
+  <title>Garbage NAV - Garbage MAP</title>  
   <!-- Import Bootstrap Core CSS -->
   <link href="../lib/bootstrap/css/bootstrap.css" rel="stylesheet">
   <!-- Import custom CSS for Garbage Bin Navigator -->
@@ -29,7 +29,7 @@
     <div class="container">
       <a href="home.jsp" class="navbar-brand"> 
         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-        Garbage NAVIGATOR
+        Garbage NAV
       </a>
       <button class="navbar-toggle" data-toggle="collapse"
         data-target=".navHeaderCollapse">
@@ -85,19 +85,26 @@
           <h4 class="modal-title">Add Garbage SPOT</h4>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to add the following position to Garbage SPOTS?</p>
-        </div>
-        <div class="input-group" style="padding: 15px">
-          <span class="input-group-addon">
-            <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
-          </span>
-          <input id="addGarbageSpotCoordinatesInput" type="text" class="form-control" name="addGarbageSpotCoordinatesInput" placeholder="Latitude, Longitude">
-          <span class="input-group-btn">
-            <button class="btn btn-primary" type="button" onclick="return identifyAddGarbageSpotInputCoordinates( this, event )">
-            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-              Identify
-            </button>
-          </span>
+          <p>Add the following entry to GARBAGE SPOTS?</p>
+          <div class="input-group" style="padding-bottom: 15px">
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-font" aria-hidden="true"></span>
+            </span>
+            <input id="addGarbageSpotNameInput" type="text" class="form-control" name="addGarbageSpotNameInput" placeholder="Garbage SPOT Name">
+          </div>
+          <div class="input-group" style="padding-bottom: 15px">
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+            </span>
+            <input id="addGarbageSpotCoordinatesInput" type="text" class="form-control" name="addGarbageSpotCoordinatesInput" placeholder="Latitude, Longitude">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button" onclick="return identifyAddGarbageSpotInputCoordinates( this, event )">
+              <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                Identify
+              </button>
+            </span>
+          </div>
+          <textarea id="addGarbageSpotDescriptionInput" class="form-control" name="addGarbageSpotDescriptionInput" rows="3" placeholder="Description"></textarea>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" onclick="return addGarbageSpot( this, event )">

@@ -4,4 +4,7 @@
   <welcome-file-list>
     <welcome-file>IndexServlet</welcome-file>
   </welcome-file-list>
+  <listener>
+    <listener-class>com.garbagebinserver.network.GarbageNavigatorContextListener</listener-class>
+  </listener>
 </web-app>

@@ -2,6 +2,7 @@ package com.garbagebinserver.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedHashSet;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -13,6 +14,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
+import com.garbagebinserver.data.GarbageNavData;
+import com.garbagebinserver.data.GarbageSpot;
 
 
 /**
@@ -35,7 +39,6 @@ public class GarbageMapServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		// TODO Auto-generated method stub
-	  System.out.println("I am initialized!");
 	}
 
 	/**
@@ -49,40 +52,73 @@ public class GarbageMapServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		
-		System.out.println("Attempting retrieval...");
-		
-		try {
-		  String action = request.getParameter( "action" );
-		  String json = request.getParameter( "json" );
-		  JSONObject jsonData = ( JSONObject ) JSONValue.parse( json );
-		  String helloMsg = ( String )jsonData.get( "helloMsg" );
-		  System.out.println( helloMsg );
-		  
-		  JSONObject jsonResponse = new JSONObject();
-		  jsonResponse.put( "message", "Hello from JSP!" );
-		  
-		  String jsonResponseStr = JSONObject.toJSONString( jsonResponse );
-		  out.println( jsonResponseStr );
-		}
-		catch( Exception e ) {
-		  e.printStackTrace();
-		}
-		finally {
-		  out.flush();
-		  out.close();
-		}
+		processRequest( request, response );
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 	   RequestDispatcher view = request.getRequestDispatcher("jsp/garbagemap.jsp");
 	   view.forward(request, response);
 	}
 
+	protected void processRequest( HttpServletRequest request, HttpServletResponse response ) throws IOException {
+	  response.setContentType( "text/json" );
+	  PrintWriter out = response.getWriter();
+	  
+	  try {
+	    final String action = request.getParameter( "action" );
+	    final JSONObject jsonDataResponseObject = new JSONObject();
+	    
+	    switch( action ) {
+	      case "addGarbageSpot":
+	        final String jsonDataRequestString = ( String )request.getParameter( "json" );
+	        final JSONObject jsonDataRequestObject = ( JSONObject )JSONValue.parse( jsonDataRequestString );
+	        addGarbageSpot( jsonDataRequestObject, jsonDataResponseObject );
+	        break;
+	      case "getGarbageSpots":
+	        getGarbageSpots( jsonDataResponseObject );
+	        break;
+	      default:
+	        break;
+	    }
+	    
+	    final String jsonDataResponseString = JSONObject.toJSONString( jsonDataResponseObject );
+	    out.println( jsonDataResponseString );
+	  }
+	  catch( Exception e ) {
+	    e.printStackTrace();
+	  }
+	  finally {
+	    out.flush();
+	    out.close();
+	  }
+	}
+	
+	protected void addGarbageSpot( JSONObject jsonDataRequestObject, JSONObject jsonDataResponseObject ) {
+	  final String name = ( String )jsonDataRequestObject.get( "name" );
+    final double latitude = ( double )jsonDataRequestObject.get( "latitude" );
+    final double longitude = ( double )jsonDataRequestObject.get( "longitude" );
+    final String description = ( String )jsonDataRequestObject.get( "description" );
+    final int garbageSpotID = GarbageNavData.getInstance().addGarbageSpot( name, latitude, longitude, description );
+    jsonDataResponseObject.put( "garbageSpotID", garbageSpotID );
+	}
+	
+	protected void getGarbageSpots( JSONObject jsonDataResponseObject ) {
+	  LinkedHashSet<GarbageSpot> garbageSpots = GarbageNavData.getInstance().getGarbageSpots();
+	  
+	  for( GarbageSpot garbageSpot : garbageSpots ) {
+	    JSONObject garbageSpotJSONObject = new JSONObject();
+	    
+	    garbageSpotJSONObject.put( "garbageSpotID", garbageSpot.getGarbageSpotID() );
+	    garbageSpotJSONObject.put( "name", garbageSpot.getName() );
+	    garbageSpotJSONObject.put( "latitude", garbageSpot.getLatitude() );
+	    garbageSpotJSONObject.put( "longitude", garbageSpot.getLongitude() );
+	    garbageSpotJSONObject.put( "description", garbageSpot.getDescription() );
+	    
+	    String garbageSpotJSONString = JSONObject.toJSONString( garbageSpotJSONObject );
+	    jsonDataResponseObject.put( garbageSpot.getGarbageSpotID(), garbageSpotJSONString );
+	  }
+	}
 }

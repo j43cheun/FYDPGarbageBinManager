@@ -4,8 +4,8 @@ import java.util.LinkedHashSet;
 
 public class KMeansCluster implements Cluster {
 
-  private Coordinates m_centroid;
-  private LinkedHashSet<Coordinates> m_clusterPoints;
+  protected Coordinates m_centroid;
+  protected LinkedHashSet<Coordinates> m_clusterPoints;
   
   public KMeansCluster( Coordinates initialCentroid ) throws IllegalArgumentException {
     if( initialCentroid == null ) {

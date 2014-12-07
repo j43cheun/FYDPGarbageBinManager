@@ -3,7 +3,7 @@
   <div class="container">
     <a href="home.jsp" class="navbar-brand"> 
       <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-      Garbage NAVIGATOR
+      Garbage NAV
     </a>
     <button class="navbar-toggle" data-toggle="collapse"
       data-target=".navHeaderCollapse">

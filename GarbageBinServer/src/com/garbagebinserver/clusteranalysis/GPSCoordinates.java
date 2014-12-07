@@ -1,8 +1,8 @@
 package com.garbagebinserver.clusteranalysis;
 
 public class GPSCoordinates implements Coordinates {
-  private double m_latitude;
-  private double m_longitude;
+  protected double m_latitude;
+  protected double m_longitude;
   
   public GPSCoordinates( double latitude, double longitude ) {
     if( latitude < -90 || latitude > 90 ) {
