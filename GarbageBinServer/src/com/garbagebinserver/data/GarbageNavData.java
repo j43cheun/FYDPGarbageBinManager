@@ -38,6 +38,6 @@ public class GarbageNavData {
   }
   
   public LinkedHashSet<GarbageSpot> getGarbageSpots() {
-    return new LinkedHashSet<GarbageSpot>(m_garbageSpotTable.values());
+    return new LinkedHashSet<GarbageSpot>( m_garbageSpotTable.values() );
   }
 }

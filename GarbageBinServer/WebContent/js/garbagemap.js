@@ -152,12 +152,28 @@ function loadAddGarbageSpotModal( object, event ) {
     if( gmaps_latLng != null ) {
       var addGarbageSpotCoordinatesInputElement = document.getElementById( 'addGarbageSpotCoordinatesInput' );
       addGarbageSpotCoordinatesInputElement.value = gmaps_latLng.toUrlValue();
-      $('#addGarbageSpotModal').modal( 'toggle' );
+      $( '#addGarbageSpotModal' ).modal( 'toggle' );
     }
   }
   else {
     alertString =
       'Please enter GPS coordinates below!';
+    alert( alertString );
+  }
+  
+  return false;
+}
+
+function loadAllocateGarbageBinsModal( object, event ) {
+  var alertString;
+  var numGarbageSpots = Object.keys( gmaps_garbageSpotTable ).length;
+  
+  if( numGarbageSpots > 0 ) {
+    $( '#allocateGarbageBinsModal' ).modal( 'toggle' ); 
+  }
+  else {
+    alertString =
+      'There are no garbage spots available! At least x1 garbage spot is required to perform allocation!';
     alert( alertString );
   }
   
@@ -247,3 +263,6 @@ function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description ) {
 }
 
 google.maps.event.addDomListener( window, 'load', gmaps_initialize );
+
+// Initialize bootstrap-switch
+$('.bootstrap-switch').bootstrapSwitch('state', true);
