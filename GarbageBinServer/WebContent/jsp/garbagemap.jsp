@@ -192,7 +192,7 @@
             </p>
             <div class="input-group">
               <div class="input-group-addon">Assignment Iterations</div>
-              <input type="number" class="form-control" id="allocationAssignmentIterations" value="1">
+              <input type="number" class="form-control" id="allocationNumAssignmentIterations" value="1">
             </div>
           </form>
         </div>
@@ -205,6 +205,21 @@
         </div>
       </div>
     </div>
+    <div id="allocateGarbageBinsProgressModal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+          	<h4 class="modal-title">Allocate Garbage Bins</h4>
+          </div>
+          <div class="modal-body">
+          	<div class="progress">
+              <div class="progress-bar progress-bar-danger progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                <span class="sr-only"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
   <!-- Import JQuery JavaScript Library -->
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>

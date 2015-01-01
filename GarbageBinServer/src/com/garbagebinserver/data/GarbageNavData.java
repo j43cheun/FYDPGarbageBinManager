@@ -3,6 +3,9 @@ package com.garbagebinserver.data;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
+import com.garbagebinserver.clusteranalysis.Coordinates;
+import com.garbagebinserver.clusteranalysis.KMeansCluster;
+
 public class GarbageNavData {
   
   private static GarbageNavData m_instance = null;
@@ -10,13 +13,15 @@ public class GarbageNavData {
   private int m_nextGarbageSpotID;
   private int m_nextGarbageClusterID;
   private LinkedHashMap<Integer, GarbageSpot> m_garbageSpotTable;
-  private LinkedHashSet<GarbageSpot> m_availableGarbageSpots;
+  private LinkedHashMap<Integer, KMeansCluster> m_kmeansClusterTable;
+  private LinkedHashSet<Integer> m_availableGarbageSpotsByID;
   
   public GarbageNavData() {
     m_nextGarbageSpotID = 1;
     m_nextGarbageClusterID = 1;
     m_garbageSpotTable = new LinkedHashMap<Integer, GarbageSpot>();
-    m_availableGarbageSpots = new LinkedHashSet<GarbageSpot>();
+    m_kmeansClusterTable = new LinkedHashMap<Integer, KMeansCluster>();
+    m_availableGarbageSpotsByID = new LinkedHashSet<Integer>();
   }
   
   public static GarbageNavData getInstance() {
@@ -38,11 +43,44 @@ public class GarbageNavData {
     int garbageSpotID = m_nextGarbageSpotID++;
     GarbageSpot garbageSpot = new GarbageSpot( garbageSpotID, name, latitude, longitude, description );
     m_garbageSpotTable.put( garbageSpotID, garbageSpot );
-    m_availableGarbageSpots.add( garbageSpot );
+    m_availableGarbageSpotsByID.add( garbageSpotID );
     return garbageSpotID;
   }
   
-  public LinkedHashSet<GarbageSpot> getGarbageSpots() {
-    return new LinkedHashSet<GarbageSpot>( m_garbageSpotTable.values() );
+  public LinkedHashSet<Coordinates> getAllGarbageSpots() {
+    return new LinkedHashSet<Coordinates>( m_garbageSpotTable.values() );
+  }
+  
+  public LinkedHashSet<Coordinates> getAvailableGarbageSpots() {
+    final LinkedHashSet<Coordinates> availableGarbageSpots = new LinkedHashSet<Coordinates>();
+    
+    for( Integer availableGarbageSpotID : m_availableGarbageSpotsByID ) {
+      // Note: All garbage spot IDs MUST have a corresponding garbage spot!
+      availableGarbageSpots.add( m_garbageSpotTable.get( availableGarbageSpotID ) );
+    }
+    
+    return availableGarbageSpots;
+  }
+  
+  public LinkedHashSet<Integer> getAvailableGarbageSpotsByID() {
+    return m_availableGarbageSpotsByID;
+  }
+  
+  public LinkedHashSet<KMeansCluster> getGarbageClusters() {
+    return new LinkedHashSet<KMeansCluster>( m_kmeansClusterTable.values() );
+  }
+  
+  public void addGarbageClusters( final LinkedHashSet<KMeansCluster> garbageClusters ) {
+    for( KMeansCluster kmeansCluster : garbageClusters ) {
+      m_kmeansClusterTable.put( kmeansCluster.getClusterID() , kmeansCluster );
+    }
+  }
+  
+  public void setGarbageClusters( final LinkedHashSet<KMeansCluster> garbageClusters ) {
+    m_kmeansClusterTable.clear();
+    
+    for( KMeansCluster kmeansCluster : garbageClusters ) {
+      m_kmeansClusterTable.put( kmeansCluster.getClusterID() , kmeansCluster );
+    }
   }
 }

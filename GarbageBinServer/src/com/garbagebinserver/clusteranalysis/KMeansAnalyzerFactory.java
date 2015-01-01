@@ -11,7 +11,6 @@ public class KMeansAnalyzerFactory {
       kmeansAnalyzer.run();
     }
     catch ( Exception e ) {
-      System.out.println("landing in here!");
       e.printStackTrace();
       kmeansAnalyzer = null;
     }

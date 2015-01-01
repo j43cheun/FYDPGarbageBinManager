@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import com.garbagebinserver.clusteranalysis.Coordinates;
+import com.garbagebinserver.clusteranalysis.KMeansAnalyzer;
+import com.garbagebinserver.clusteranalysis.KMeansAnalyzerFactory;
 import com.garbagebinserver.data.GarbageNavData;
 import com.garbagebinserver.data.GarbageSpot;
 
@@ -71,17 +74,22 @@ public class GarbageMapServlet extends HttpServlet {
 	    final String action = request.getParameter( "action" );
 	    final JSONObject jsonDataResponseObject = new JSONObject();
 	    
+	    String jsonDataRequestString;
+	    JSONObject jsonDataRequestObject;
+	    
 	    switch( action ) {
 	      case "addGarbageSpot":
-	        final String jsonDataRequestString = ( String )request.getParameter( "json" );
-	        final JSONObject jsonDataRequestObject = ( JSONObject )JSONValue.parse( jsonDataRequestString );
+	        jsonDataRequestString = ( String )request.getParameter( "json" );
+	        jsonDataRequestObject = ( JSONObject )JSONValue.parse( jsonDataRequestString );
 	        addGarbageSpot( jsonDataRequestObject, jsonDataResponseObject );
 	        break;
 	      case "getGarbageSpots":
 	        getGarbageSpots( jsonDataResponseObject );
 	        break;
-	      case "allocateGarbageBins":
-	        // TODO
+	      case "computeGarbageClusters":
+	        jsonDataRequestString = ( String )request.getParameter( "json" );
+            jsonDataRequestObject = ( JSONObject )JSONValue.parse( jsonDataRequestString );
+	        computeGarbageClusters( jsonDataRequestObject );
 	        break;
 	      default:
 	        break;
@@ -108,13 +116,41 @@ public class GarbageMapServlet extends HttpServlet {
       jsonDataResponseObject.put( "garbageSpotID", garbageSpotID );
 	}
 	
-	protected void getGarbageSpots( JSONObject jsonDataResponseObject ) {
-	  LinkedHashSet<GarbageSpot> garbageSpots = GarbageNavData.getInstance().getGarbageSpots();
+	protected void computeGarbageClusters( JSONObject jsonDataRequestObject ) {
+	  final String allocationOption = ( String )jsonDataRequestObject.get( "allocationOption" );
+	  final int numGarbageClusters = Integer.parseInt( ( String )jsonDataRequestObject.get( "numGarbageClusters" ) );
+	  final int numClusterIterations = Integer.parseInt( ( String )jsonDataRequestObject.get( "numClusterIterations" ) );
 	  
-	  for( GarbageSpot garbageSpot : garbageSpots ) {
+	  LinkedHashSet<Coordinates> garbageSpotSet = null;
+	  KMeansAnalyzer kmeansAnalyzer = null;
+	  
+	  switch( allocationOption ) {
+	    case "OPTION1":
+	      garbageSpotSet = GarbageNavData.getInstance().getAvailableGarbageSpots();
+	      kmeansAnalyzer = KMeansAnalyzerFactory.findClusters( numGarbageClusters, numClusterIterations, garbageSpotSet );
+	      GarbageNavData.getInstance().addGarbageClusters( kmeansAnalyzer.getClusters() );
+	      break;
+	    case "OPTION2":
+	      garbageSpotSet = GarbageNavData.getInstance().getAllGarbageSpots();
+	      kmeansAnalyzer = KMeansAnalyzerFactory.findClusters( numGarbageClusters, numClusterIterations, garbageSpotSet );
+	      GarbageNavData.getInstance().setGarbageClusters( kmeansAnalyzer.getClusters() );
+	      break;
+	    default:
+	      // Unreachable!
+	      break;
+	  }
+	}
+	
+	protected void getGarbageSpots( JSONObject jsonDataResponseObject ) {
+	  LinkedHashSet<Coordinates> garbageSpotCoordinates = GarbageNavData.getInstance().getAllGarbageSpots();
+	  
+	  for( Coordinates garbageSpotCoordinate : garbageSpotCoordinates ) {
+	    // All Coordinate instances are also GarbageSpot instances!
+	    final GarbageSpot garbageSpot = ( GarbageSpot )garbageSpotCoordinate;
 	    JSONObject garbageSpotJSONObject = new JSONObject();
 	    
 	    garbageSpotJSONObject.put( "garbageSpotID", garbageSpot.getGarbageSpotID() );
+	    garbageSpotJSONObject.put( "garbageClusterID", garbageSpot.getClusterID() );
 	    garbageSpotJSONObject.put( "name", garbageSpot.getName() );
 	    garbageSpotJSONObject.put( "latitude", garbageSpot.getLatitude() );
 	    garbageSpotJSONObject.put( "longitude", garbageSpot.getLongitude() );

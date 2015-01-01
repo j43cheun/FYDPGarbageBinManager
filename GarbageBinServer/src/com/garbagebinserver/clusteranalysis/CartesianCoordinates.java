@@ -2,11 +2,13 @@ package com.garbagebinserver.clusteranalysis;
 
 public class CartesianCoordinates implements Coordinates {
 
+  private int m_clusterID;
   private double m_x;
   private double m_y;
   private double m_z;
   
   public CartesianCoordinates( double x, double y, double z ) {
+    m_clusterID = -1;
     m_x = x;
     m_y = y;
     m_z = z;
@@ -36,7 +38,6 @@ public class CartesianCoordinates implements Coordinates {
     m_z = z;
   }
   
-  @Override
   public double getDistance( Coordinates coordinates ) {
     if( !( coordinates instanceof CartesianCoordinates ) ) {
       throw new IllegalArgumentException( "Cannot compute GPS distance between coordinates of different classes!" );
@@ -49,6 +50,14 @@ public class CartesianCoordinates implements Coordinates {
     double cartesianDistance = Math.sqrt( Math.pow( deltaX, 2 ) + Math.pow( deltaY, 2 ) + Math.pow( deltaZ, 2 ) );
     
     return cartesianDistance;
+  }
+  
+  public int getClusterID() {
+    return m_clusterID;
+  }
+  
+  public void setClusterID( int clusterID ) {
+    m_clusterID = clusterID;
   }
   
   public GPSCoordinates convertToGPSCoordinates() {

@@ -51,6 +51,7 @@ function gmaps_initialize() {
       var garbageSpotJSONString = jsonDataResponseObject[key];
       var garbageSpotJSONObject = jQuery.parseJSON( garbageSpotJSONString );
       var garbageSpotID = garbageSpotJSONObject.garbageSpotID;
+      var garbageClusterID = garbageSpotJSONObject.garbageClusterID;
       var name = garbageSpotJSONObject.name;
       var latitude = garbageSpotJSONObject.latitude;
       var longitude = garbageSpotJSONObject.longitude;
@@ -58,7 +59,7 @@ function gmaps_initialize() {
       var gmaps_latLng = gmaps_latLngFactory( latitude, longitude );
       
       if( gmaps_latLng != null ) {
-        loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description );
+        loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID );
       }
     }
   } );
@@ -264,7 +265,7 @@ function addGarbageSpot( object, event ) {
           'Cannot add a garbage SPOT that already exists!';
         alert( alertString );
       }
-    })
+    } );
   }
   else {
     alertString = 
@@ -276,10 +277,100 @@ function addGarbageSpot( object, event ) {
 }
 
 function allocateGarbageBins( object, event ) {
-  var alertString = 
-    'TODO! Implement functionality for allocating garbage bins!';
-  alert( alertString );
+  var alertString;
+  
+  var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
+  var tdAllocationNumGarbageSpotsElement = document.getElementById( 'allocationNumGarbageSpots' );
+  
+  var numGarbageClusters = document.getElementById( 'allocationNumClusters' ).value;
+  var numClusterIterations = document.getElementById( 'allocationNumClusterIterations' ).value;
+  var numAssignmentIterations = document.getElementById( 'allocationNumAssignmentIterations' ).value;
+  
+  if( numGarbageClusters != parseInt( numGarbageClusters, 10 ) ) {
+    alertString = 'The quantity of garbage clusters MUST be an integer!';
+    alert( alertString );
+  }
+  else if( numGarbageClusters <= 0 ) {
+    alertString = 'The quantity of garbage clusters MUST be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  
+  if( numClusterIterations != parseInt( numClusterIterations, 10 ) ) {
+    alertString = 'The quantity of cluster iterations MUST be an integer!';
+    alert( alertString );
+    return false;
+  }
+  else if( numClusterIterations <= 0 ) {
+    alertString = 'The quantity of cluster iterations MUST be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  
+  if( numAssignmentIterations != parseInt( numAssignmentIterations, 10 ) ) {
+    alertString = 'The quantity of assignment iterations MUST be an integer!';
+    alert( alertString );
+    return false;
+  }
+  else if( numAssignmentIterations <= 0 ) {
+    alertString = 'The quantity of assignment iterations MUST be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  
+  var allocationOption1RadioBtn = $( '#allocationOption1' );
+  var allocationOption;
+  
+  var jsonDataRequestObject = new Object();
+  
+  if( allocationOption1RadioBtn.bootstrapSwitch( 'state' ) == true ) {
+    if( numGarbageClusters > availableGarbageSpots.length ) {
+      alertString = 
+        'The quantity of garbage clusters MUST be less than BOTH the quantity ' +
+        'of available garbage spots and the quantity of available garbage bins!';
+      alert( alertString );
+      return false;
+    }
+    
+    allocationOption = 'OPTION1';
+  }
+  else {
+    if( numGarbageClusters > Object.keys( gmaps_garbageSpotTable ).length ) {
+      alertString = 
+        'The quantity of garbage clusters MUST be less than BOTH the quantity ' +
+        'of garbage spots and the quantity of garbage bins!';
+      alert( alertString )
+      return false;
+    }
+    
+    allocationOption = 'OPTION2';
+  }
+  
+  // Compute clusters.
+  var jsonDataRequestObject = new Object();
+  
+  jsonDataRequestObject.allocationOption = allocationOption;
+  jsonDataRequestObject.numGarbageClusters = numGarbageClusters;
+  jsonDataRequestObject.numClusterIterations = numClusterIterations;
+  
+  var jsonDataRequestString = JSON.stringify( jsonDataRequestObject );
+  
+  /*
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"computeGarbageClusters", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
+    // NO JSON DATA RESPONSE OBJECT RETURNED!
+  } );
+  */
+  
+  // $( '#allocateGarbageBinsModal' ).modal( 'toggle' ); 
+  $( '#allocateGarbageBinsProgressModal' ).modal( 'toggle' );
+  
+  
+  
+  
   return false;
+}
+
+function dummy() {
 }
 
 function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID ) {

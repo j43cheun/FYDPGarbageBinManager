@@ -7,7 +7,7 @@ public class GarbageSpot extends GPSCoordinates {
   private int m_garbageSpotID;
   private String m_name;
   private String m_description;
-
+  
   public GarbageSpot(final int garbageSpotID, final String name, final double latitude, final double longitude, final String description) {
     super(latitude, longitude);
     

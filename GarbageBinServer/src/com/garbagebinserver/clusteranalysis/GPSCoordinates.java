@@ -1,6 +1,8 @@
 package com.garbagebinserver.clusteranalysis;
 
 public class GPSCoordinates implements Coordinates {
+  
+  protected int m_clusterID;
   protected double m_latitude;
   protected double m_longitude;
   
@@ -13,6 +15,7 @@ public class GPSCoordinates implements Coordinates {
       throw new IllegalArgumentException( "Longitude argument is outside of valid range [-180, 180]!" );
     }
     
+    m_clusterID = -1;
     m_latitude = latitude;
     m_longitude = longitude;
   }
@@ -72,5 +75,13 @@ public class GPSCoordinates implements Coordinates {
     double zCoordinate = Math.sin( latitudeRadians );
     
     return new CartesianCoordinates( xCoordinate, yCoordinate, zCoordinate );
+  }
+  
+  public int getClusterID() {
+    return m_clusterID;
+  }
+  
+  public void setClusterID( final int clusterID ) {
+    m_clusterID = clusterID;
   }
 }
