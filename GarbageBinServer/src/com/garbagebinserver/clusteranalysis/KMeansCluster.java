@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 public class KMeansCluster implements Cluster {
 
+  protected int m_generalID;
   protected Coordinates m_centroid;
   protected LinkedHashSet<Coordinates> m_clusterPoints;
   
@@ -12,6 +13,7 @@ public class KMeansCluster implements Cluster {
       throw new IllegalArgumentException( "Cannot set centroid to null!" );
     }
     
+    m_generalID = -1;
     m_centroid = initialCentroid;
     m_clusterPoints = new LinkedHashSet<Coordinates>();
   }
@@ -76,5 +78,13 @@ public class KMeansCluster implements Cluster {
     }
     
     m_clusterPoints.remove( clusterPoint );
+  }
+  
+  public int getGeneralID() {
+    return m_generalID;
+  }
+  
+  public void setGeneralID( int generalID ) {
+    m_generalID = generalID;
   }
 }

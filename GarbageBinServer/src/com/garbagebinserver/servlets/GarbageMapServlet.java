@@ -80,6 +80,9 @@ public class GarbageMapServlet extends HttpServlet {
 	      case "getGarbageSpots":
 	        getGarbageSpots( jsonDataResponseObject );
 	        break;
+	      case "allocateGarbageBins":
+	        // TODO
+	        break;
 	      default:
 	        break;
 	    }
@@ -98,11 +101,11 @@ public class GarbageMapServlet extends HttpServlet {
 	
 	protected void addGarbageSpot( JSONObject jsonDataRequestObject, JSONObject jsonDataResponseObject ) {
 	  final String name = ( String )jsonDataRequestObject.get( "name" );
-    final double latitude = ( double )jsonDataRequestObject.get( "latitude" );
-    final double longitude = ( double )jsonDataRequestObject.get( "longitude" );
-    final String description = ( String )jsonDataRequestObject.get( "description" );
-    final int garbageSpotID = GarbageNavData.getInstance().addGarbageSpot( name, latitude, longitude, description );
-    jsonDataResponseObject.put( "garbageSpotID", garbageSpotID );
+      final double latitude = ( double )jsonDataRequestObject.get( "latitude" );
+      final double longitude = ( double )jsonDataRequestObject.get( "longitude" );
+      final String description = ( String )jsonDataRequestObject.get( "description" );
+      final int garbageSpotID = GarbageNavData.getInstance().addGarbageSpot( name, latitude, longitude, description );
+      jsonDataResponseObject.put( "garbageSpotID", garbageSpotID );
 	}
 	
 	protected void getGarbageSpots( JSONObject jsonDataResponseObject ) {

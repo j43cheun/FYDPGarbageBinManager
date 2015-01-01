@@ -176,20 +176,28 @@
             </p>
             <div class="input-group" style="padding-bottom: 15px">
               <div class="input-group-addon">Garbage Clusters</div>
-              <input type="number" class="form-control" id="exampleInputAmount" value="1">
+              <input type="number" class="form-control" id="allocationNumClusters" value="1">
             </div>
             <p>
-              Specify the quantity of iterations to be performed. This value MUST be greater 
-              than 0.
+              Specify the quantity of iterations to be performed by the 
+              clustering algorithm. This value MUST be greater than 0.
+            </p>
+            <div class="input-group" style="padding-bottom: 15px">
+              <div class="input-group-addon">Cluster Iterations</div>
+              <input type="number" class="form-control" id="allocationNumClusterIterations" value="1">
+            </div>
+            <p>
+              Specify the quantity of iterations to be performed by the 
+              assignment algorithm. This value MUST be greater than 0.
             </p>
             <div class="input-group">
-              <div class="input-group-addon">Iterations</div>
-              <input type="number" class="form-control" id="exampleInputAmount" value="1">
+              <div class="input-group-addon">Assignment Iterations</div>
+              <input type="number" class="form-control" id="allocationAssignmentIterations" value="1">
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" onclick="#TODO">
+          <button type="button" class="btn btn-danger" onclick="return allocateGarbageBins( this, event )">
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
             Allocate Garbage Bins
           </button>

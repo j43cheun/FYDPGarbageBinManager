@@ -8,11 +8,15 @@ public class GarbageNavData {
   private static GarbageNavData m_instance = null;
   
   private int m_nextGarbageSpotID;
+  private int m_nextGarbageClusterID;
   private LinkedHashMap<Integer, GarbageSpot> m_garbageSpotTable;
+  private LinkedHashSet<GarbageSpot> m_availableGarbageSpots;
   
   public GarbageNavData() {
     m_nextGarbageSpotID = 1;
+    m_nextGarbageClusterID = 1;
     m_garbageSpotTable = new LinkedHashMap<Integer, GarbageSpot>();
+    m_availableGarbageSpots = new LinkedHashSet<GarbageSpot>();
   }
   
   public static GarbageNavData getInstance() {
@@ -34,6 +38,7 @@ public class GarbageNavData {
     int garbageSpotID = m_nextGarbageSpotID++;
     GarbageSpot garbageSpot = new GarbageSpot( garbageSpotID, name, latitude, longitude, description );
     m_garbageSpotTable.put( garbageSpotID, garbageSpot );
+    m_availableGarbageSpots.add( garbageSpot );
     return garbageSpotID;
   }
   

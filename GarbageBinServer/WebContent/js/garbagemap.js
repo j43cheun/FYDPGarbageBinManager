@@ -1,3 +1,15 @@
+// For removing elements from array...
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
 /**
  * Garbage MAP JavaScript Source
  */
@@ -5,12 +17,17 @@ var gmaps_map;
 var gmaps_activeMarker;
 var gmaps_tempMarker;
 
-function GarbageSpot( garbageSpotID, name, gmaps_marker, description ) {
+function GarbageSpot( garbageSpotID, name, gmaps_marker, description, garbageClusterID ) {
   this.garbageSpotID = garbageSpotID;
   this.name = name;
   this.gmaps_marker = gmaps_marker;
   this.description = description;
+  this.garbageClusterID = garbageClusterID;
 }
+
+// TODO: GarbageCluster
+
+var availableGarbageSpots = [];
 
 var gmaps_garbageSpotTable = {}
 
@@ -169,6 +186,32 @@ function loadAllocateGarbageBinsModal( object, event ) {
   var numGarbageSpots = Object.keys( gmaps_garbageSpotTable ).length;
   
   if( numGarbageSpots > 0 ) {
+    var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
+    var tdAllocationNumGarbageSpotsElement = document.getElementById( 'allocationNumGarbageSpots' );
+    var allocationOption1RadioBtn = $( '#allocationOption1' );
+    var allocationOption2RadioBtn = $( '#allocationOption2' );
+	
+    // Set OPTION1 radio to TRUE; OPTION2 radio to FALSE.
+    allocationOption1RadioBtn.bootstrapSwitch( 'state', true );
+    allocationOption2RadioBtn.bootstrapSwitch( 'state', false );
+    
+    // Initialize statistics table to reflect statistics from OPTION1.
+    tdAllocationNumGarbageBinsElement.innerHTML = 'TODO';
+    tdAllocationNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
+    
+    // Set switch change event on OPTION1 radio. This event handles switch 
+    // change for OPTION1 radio as well.
+    allocationOption1RadioBtn.on( 'switchChange.bootstrapSwitch', function( event, data ) {
+      if( allocationOption1RadioBtn.bootstrapSwitch( 'state' ) == true ) {
+        tdAllocationNumGarbageBinsElement.innerHTML = 'TODO';
+        tdAllocationNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
+      }
+      else {
+        tdAllocationNumGarbageBinsElement.innerHTML = 'TODO';
+        tdAllocationNumGarbageSpotsElement.innerHTML = Object.keys( gmaps_garbageSpotTable ).length;
+      }
+    } );
+    
     $( '#allocateGarbageBinsModal' ).modal( 'toggle' ); 
   }
   else {
@@ -209,7 +252,7 @@ function addGarbageSpot( object, event ) {
           garbageCoordinatesInputElement.value = "";
         }
 
-        loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description );
+        loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, -1 );
         $('#addGarbageSpotModal').modal( 'toggle' );
         
         addGarbageSpotNameInputElement.value = "";
@@ -232,7 +275,14 @@ function addGarbageSpot( object, event ) {
   return false;
 }
 
-function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description ) {
+function allocateGarbageBins( object, event ) {
+  var alertString = 
+    'TODO! Implement functionality for allocating garbage bins!';
+  alert( alertString );
+  return false;
+}
+
+function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID ) {
   var gmaps_marker = new google.maps.Marker( {
     position: gmaps_latLng,
     map: gmaps_map,
@@ -259,7 +309,11 @@ function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description ) {
   } );
   
   gmaps_marker.setIcon('../icons/green_flag.png');
-  gmaps_garbageSpotTable[garbageSpotID] = new GarbageSpot( garbageSpotID, name, gmaps_marker, description );
+  gmaps_garbageSpotTable[garbageSpotID] = new GarbageSpot( garbageSpotID, name, gmaps_marker, description, garbageClusterID );
+  
+  if( garbageClusterID == -1 ) {
+    availableGarbageSpots.push( garbageSpotID );
+  }
 }
 
 google.maps.event.addDomListener( window, 'load', gmaps_initialize );
