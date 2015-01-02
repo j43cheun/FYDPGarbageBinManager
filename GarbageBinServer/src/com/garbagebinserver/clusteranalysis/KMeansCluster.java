@@ -8,12 +8,12 @@ public class KMeansCluster implements Cluster {
   protected Coordinates m_centroid;
   protected LinkedHashSet<Coordinates> m_clusterPoints;
   
-  public KMeansCluster( Coordinates initialCentroid ) throws IllegalArgumentException {
+  public KMeansCluster( Coordinates initialCentroid, int clusterID ) throws IllegalArgumentException {
     if( initialCentroid == null ) {
       throw new IllegalArgumentException( "Cannot set centroid to null!" );
     }
     
-    m_clusterID = -1;
+    m_clusterID = clusterID;
     m_centroid = initialCentroid;
     m_clusterPoints = new LinkedHashSet<Coordinates>();
   }

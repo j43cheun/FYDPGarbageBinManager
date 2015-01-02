@@ -2,6 +2,8 @@ package com.garbagebinserver.clusteranalysis;
 
 import java.util.LinkedHashSet;
 
+import com.garbagebinserver.data.GarbageSpot;
+
 public class MidpointCalculator {
   
   public static <T> Coordinates computeMidpoint( Class<T> coordinatesClass, LinkedHashSet<Coordinates> coordinatesSet ) throws Exception {
@@ -9,10 +11,10 @@ public class MidpointCalculator {
       throw new IllegalArgumentException( "Cannot compute midpoint on null coordinates set!" );
     }
     
-    if( coordinatesClass == CartesianCoordinates.class ) {
+    if( CartesianCoordinates.class.isAssignableFrom( coordinatesClass ) ) {
       return MidpointCalculator.computeCartesianMidpoint( coordinatesSet ); 
     }
-    else if( coordinatesClass == GPSCoordinates.class ) {
+    else if( GPSCoordinates.class.isAssignableFrom( coordinatesClass ) ) {
       return MidpointCalculator.computeGPSMidpoint( coordinatesSet );
     }
     else {

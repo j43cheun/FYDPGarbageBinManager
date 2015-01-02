@@ -7,6 +7,7 @@ import java.util.Random;
 
 public class KMeansAnalyzer implements ClusterAnalyzer {
 
+  private int m_nextClusterID;
   private int m_numClusters;
   private int m_maxIterations;
   private double m_cost;
@@ -14,7 +15,7 @@ public class KMeansAnalyzer implements ClusterAnalyzer {
   private LinkedHashSet<Coordinates> m_coordinatesSet;
   private LinkedHashMap<Coordinates, KMeansCluster> m_coordinatesToClusterMap;
   
-  public KMeansAnalyzer( int numClusters, int maxIterations, LinkedHashSet<Coordinates> coordinatesSet ) {
+  public KMeansAnalyzer( int numClusters, int maxIterations, LinkedHashSet<Coordinates> coordinatesSet, int nextClusterID ) {
     if( numClusters <= 0 ) {
       throw new IllegalArgumentException( "Cannot perform K-Means cluster analysis on zero or fewer clusters!" );
     }
@@ -34,6 +35,7 @@ public class KMeansAnalyzer implements ClusterAnalyzer {
     m_numClusters = numClusters;
     m_maxIterations = maxIterations;
     m_coordinatesSet = coordinatesSet;
+    m_nextClusterID = nextClusterID;
     m_cost = -1;
   }
   
@@ -53,7 +55,7 @@ public class KMeansAnalyzer implements ClusterAnalyzer {
     Random random = new Random(System.currentTimeMillis());
     
     Coordinates clusterCentroid = coordinatesList.remove( random.nextInt( coordinatesList.size() ) );
-    m_clusters.add( new KMeansCluster( clusterCentroid ) );
+    m_clusters.add( new KMeansCluster( clusterCentroid, m_nextClusterID++ ) );
     
     for( int i = 1; i < m_numClusters; ++i ) {
       double currentTotalMinDistanceSquared = 0;
@@ -86,7 +88,7 @@ public class KMeansAnalyzer implements ClusterAnalyzer {
         
         if( randomDraw > pinwheelPrevious && randomDraw <= rouletteWheel[imid] ) {
           nextClusterCentroid = coordinatesList.remove( imid );
-          m_clusters.add( new KMeansCluster( nextClusterCentroid ) );
+          m_clusters.add( new KMeansCluster( nextClusterCentroid, m_nextClusterID++ ) );
           break;
         }
         else if( randomDraw > rouletteWheel[imid] ) {
@@ -152,6 +154,12 @@ public class KMeansAnalyzer implements ClusterAnalyzer {
       
       for( KMeansCluster cluster : m_clusters ) {
         cluster.updateCentroid();
+      }
+    }
+    
+    for( KMeansCluster kmeansCluster : m_clusters ) {
+      for( Coordinates coordinate : kmeansCluster.getClusterPoints() ) {
+        coordinate.setClusterID( kmeansCluster.getClusterID() );
       }
     }
   }
