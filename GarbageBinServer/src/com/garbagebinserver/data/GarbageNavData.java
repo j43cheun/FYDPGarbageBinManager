@@ -73,6 +73,11 @@ public class GarbageNavData {
   public void addGarbageClusters( final LinkedHashSet<KMeansCluster> garbageClusters ) {
     for( KMeansCluster kmeansCluster : garbageClusters ) {
       m_kmeansClusterTable.put( kmeansCluster.getClusterID() , kmeansCluster );
+      
+      for( Coordinates coordinate : kmeansCluster.getClusterPoints() ) {
+        GarbageSpot garbageSpot = ( GarbageSpot )coordinate;
+        m_availableGarbageSpotsByID.remove( garbageSpot.getGarbageSpotID() );
+      }
     }
   }
   
@@ -82,5 +87,17 @@ public class GarbageNavData {
     for( KMeansCluster kmeansCluster : garbageClusters ) {
       m_kmeansClusterTable.put( kmeansCluster.getClusterID() , kmeansCluster );
     }
+  }
+  
+  public int getNextGarbageClusterID() {
+    int nextGarbageClusterID = m_nextGarbageClusterID;
+    
+    m_nextGarbageClusterID++;
+    
+    return nextGarbageClusterID;
+  }
+  
+  public void resetGarbageClusterID() {
+    m_nextGarbageClusterID = 1;
   }
 }

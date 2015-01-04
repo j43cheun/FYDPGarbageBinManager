@@ -16,8 +16,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import com.garbagebinserver.clusteranalysis.Coordinates;
+import com.garbagebinserver.clusteranalysis.GPSCoordinates;
 import com.garbagebinserver.clusteranalysis.KMeansAnalyzer;
 import com.garbagebinserver.clusteranalysis.KMeansAnalyzerFactory;
+import com.garbagebinserver.clusteranalysis.KMeansCluster;
 import com.garbagebinserver.data.GarbageNavData;
 import com.garbagebinserver.data.GarbageSpot;
 
@@ -88,8 +90,11 @@ public class GarbageMapServlet extends HttpServlet {
 	        break;
 	      case "computeGarbageClusters":
 	        jsonDataRequestString = ( String )request.getParameter( "json" );
-            jsonDataRequestObject = ( JSONObject )JSONValue.parse( jsonDataRequestString );
+          jsonDataRequestObject = ( JSONObject )JSONValue.parse( jsonDataRequestString );
 	        computeGarbageClusters( jsonDataRequestObject );
+	        break;
+	      case "getGarbageClusters":
+	        getGarbageClusters( jsonDataResponseObject );
 	        break;
 	      default:
 	        break;
@@ -127,12 +132,18 @@ public class GarbageMapServlet extends HttpServlet {
 	  switch( allocationOption ) {
 	    case "OPTION1":
 	      garbageSpotSet = GarbageNavData.getInstance().getAvailableGarbageSpots();
-	      kmeansAnalyzer = KMeansAnalyzerFactory.findClusters( numGarbageClusters, numClusterIterations, garbageSpotSet );
+	      kmeansAnalyzer = KMeansAnalyzerFactory.findClusters( numGarbageClusters, numClusterIterations, garbageSpotSet, GarbageNavData.getInstance().getNextGarbageClusterID() );
 	      GarbageNavData.getInstance().addGarbageClusters( kmeansAnalyzer.getClusters() );
+	      
+	      for( KMeansCluster cluster : kmeansAnalyzer.getClusters() ) {
+          GPSCoordinates centroid = (GPSCoordinates)cluster.getCentroid();
+          System.out.println("lat: " + centroid.getLatitude() + " long: " + centroid.getLongitude()); // FOR DEBUG
+        }
 	      break;
 	    case "OPTION2":
+	      GarbageNavData.getInstance().resetGarbageClusterID();
 	      garbageSpotSet = GarbageNavData.getInstance().getAllGarbageSpots();
-	      kmeansAnalyzer = KMeansAnalyzerFactory.findClusters( numGarbageClusters, numClusterIterations, garbageSpotSet );
+	      kmeansAnalyzer = KMeansAnalyzerFactory.findClusters( numGarbageClusters, numClusterIterations, garbageSpotSet, GarbageNavData.getInstance().getNextGarbageClusterID() );
 	      GarbageNavData.getInstance().setGarbageClusters( kmeansAnalyzer.getClusters() );
 	      break;
 	    default:
@@ -158,6 +169,22 @@ public class GarbageMapServlet extends HttpServlet {
 	    
 	    String garbageSpotJSONString = JSONObject.toJSONString( garbageSpotJSONObject );
 	    jsonDataResponseObject.put( garbageSpot.getGarbageSpotID(), garbageSpotJSONString );
+	  }
+	}
+	
+	protected void getGarbageClusters( JSONObject jsonDataResponseObject ) {
+	  LinkedHashSet<KMeansCluster> garbageClusters = GarbageNavData.getInstance().getGarbageClusters();
+	  
+	  for( KMeansCluster garbageCluster : garbageClusters ) {
+	    JSONObject garbageClusterJSONObject = new JSONObject();
+	    GPSCoordinates clusterCentroid = ( GPSCoordinates )garbageCluster.getCentroid();
+	    
+	    garbageClusterJSONObject.put( "garbageClusterID", garbageCluster.getClusterID() );
+	    garbageClusterJSONObject.put( "latitude", clusterCentroid.getLatitude() );
+	    garbageClusterJSONObject.put( "longitude", clusterCentroid.getLongitude() );
+	    
+	    String garbageClusterJSONString = JSONObject.toJSONString( garbageClusterJSONObject );
+	    jsonDataResponseObject.put( garbageCluster.getClusterID(), garbageClusterJSONString );
 	  }
 	}
 }

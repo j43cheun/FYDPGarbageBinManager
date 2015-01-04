@@ -17,7 +17,7 @@ public class Main {
     coordinatesSet.add( d );
     coordinatesSet.add( e );
     coordinatesSet.add( f );
-    KMeansAnalyzer kmeansAnalyzer = KMeansAnalyzerFactory.findClusters(1, 2, coordinatesSet);
+    KMeansAnalyzer kmeansAnalyzer = KMeansAnalyzerFactory.findClusters(1, 2, coordinatesSet, 1);
     LinkedHashSet<KMeansCluster> clusters = kmeansAnalyzer.getClusters();
     
     for( KMeansCluster cluster : clusters ) {

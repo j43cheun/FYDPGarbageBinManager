@@ -25,11 +25,16 @@ function GarbageSpot( garbageSpotID, name, gmaps_marker, description, garbageClu
   this.garbageClusterID = garbageClusterID;
 }
 
+function GarbageCluster( garbageClusterID, gmaps_marker ) {
+  this.garbageClusterID = garbageClusterID;
+  this.gmaps_marker = gmaps_marker;
+}
+
 // TODO: GarbageCluster
 
 var availableGarbageSpots = [];
-
 var gmaps_garbageSpotTable = {}
+var gmaps_garbageClusterTable = {}
 
 function gmaps_initialize() {
   var gmaps_initialLatLng = new google.maps.LatLng( 43.4689, -80.5400 );
@@ -60,6 +65,21 @@ function gmaps_initialize() {
       
       if( gmaps_latLng != null ) {
         loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID );
+      }
+    }
+  } );
+  
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action: "getGarbageClusters" }, function( jsonDataResponseObject ) {
+    for( var key in jsonDataResponseObject ) {
+      var garbageClusterJSONString = jsonDataResponseObject[key];
+      var garbageClusterJSONObject = jQuery.parseJSON( garbageClusterJSONString );
+      var garbageClusterID = garbageClusterJSONObject.garbageClusterID;
+      var latitude = garbageClusterJSONObject.latitude;
+      var longitude = garbageClusterJSONObject.longitude;
+      var gmaps_latLng = gmaps_latLngFactory( latitude, longitude );
+      
+      if( gmaps_latLng != null ) {
+        loadGarbageCluster( garbageClusterID, gmaps_latLng );
       }
     }
   } );
@@ -344,6 +364,15 @@ function allocateGarbageBins( object, event ) {
     }
     
     allocationOption = 'OPTION2';
+    
+    for( var garbageClusterID in gmaps_garbageClusterTable ) {
+      if( gmaps_garbageClusterTable.hasOwnProperty( garbageClusterID ) ) {
+        var garbageCluster = gmaps_garbageClusterTable[garbageClusterID];
+        var gmaps_marker = garbageCluster.gmaps_marker;
+        gmaps_marker.setMap( null );
+        delete gmaps_garbageClusterTable[garbageClusterID];
+      }
+    }
   }
   
   // Compute clusters.
@@ -355,22 +384,35 @@ function allocateGarbageBins( object, event ) {
   
   var jsonDataRequestString = JSON.stringify( jsonDataRequestObject );
   
-  /*
   $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"computeGarbageClusters", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
     // NO JSON DATA RESPONSE OBJECT RETURNED!
   } );
-  */
   
-  // $( '#allocateGarbageBinsModal' ).modal( 'toggle' ); 
-  $( '#allocateGarbageBinsProgressModal' ).modal( 'toggle' );
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action: "getGarbageClusters" }, function( jsonDataResponseObject ) {
+    for( var key in jsonDataResponseObject ) {
+      var garbageClusterJSONString = jsonDataResponseObject[key];
+      var garbageClusterJSONObject = jQuery.parseJSON( garbageClusterJSONString );
+      var garbageClusterID = garbageClusterJSONObject.garbageClusterID;
+      var latitude = garbageClusterJSONObject.latitude;
+      var longitude = garbageClusterJSONObject.longitude;
+      var gmaps_latLng = gmaps_latLngFactory( latitude, longitude );
+      
+      if( gmaps_latLng != null ) {
+        loadGarbageCluster( garbageClusterID, gmaps_latLng );
+      }
+    }
+  } );
   
+  // Clear available garbage spots array.
+  while( availableGarbageSpots.length > 0 ) {
+    availableGarbageSpots.pop();
+  }
   
+  $( '#allocateGarbageBinsModal' ).modal( 'hide' );
   
+  google.maps.event.trigger(gmaps_map, 'resize');
   
-  return false;
-}
-
-function dummy() {
+  return true;
 }
 
 function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID ) {
@@ -405,6 +447,37 @@ function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbag
   if( garbageClusterID == -1 ) {
     availableGarbageSpots.push( garbageSpotID );
   }
+}
+
+function loadGarbageCluster( garbageClusterID, gmaps_latLng ) {
+  var garbageClusterTitle = 'Garbage Cluster ' + garbageClusterID;
+  var gmaps_marker = new google.maps.Marker( {
+    position: gmaps_latLng,
+    map: gmaps_map,
+    title: garbageClusterTitle,
+    animation: google.maps.Animation.DROP
+  } );
+  
+  var gmaps_contentString = 
+    '<div id="content">' +
+    '<h6 id="activeMarkerHeading"> Garbage Cluster ' + garbageClusterID + '</h6>' +
+    '<div id="bodyContent">' +
+    '<p>' +
+    gmaps_latLng.toUrlValue() +
+    '</p>' +
+    '</div>' +
+    '</div>';
+  
+  var gmaps_infoWindow = new google.maps.InfoWindow( {
+    content: gmaps_contentString
+  } );
+  
+  google.maps.event.addListener( gmaps_marker, 'click', function() {
+    gmaps_infoWindow.open( gmaps_map, gmaps_marker );
+  } );
+  
+  gmaps_marker.setIcon('../icons/azure_flag.png');
+  gmaps_garbageClusterTable[garbageClusterID] = new GarbageCluster( garbageClusterID, gmaps_marker );
 }
 
 google.maps.event.addDomListener( window, 'load', gmaps_initialize );
