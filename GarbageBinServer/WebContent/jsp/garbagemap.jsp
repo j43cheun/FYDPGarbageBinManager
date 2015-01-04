@@ -43,7 +43,7 @@
         <ul class="nav navbar-nav navbar-right">
           <li><a href="#TODO">Garbage BINS</a></li>
           <li class="active"><a href="garbagemap.jsp">Garbage MAP</a></li>
-          <li><a href="#TODO">Garbage SPOTS</a></li>
+          <li><a href="garbagespots.jsp">Garbage SPOTS</a></li>
         </ul>
       </div>
     </div>
