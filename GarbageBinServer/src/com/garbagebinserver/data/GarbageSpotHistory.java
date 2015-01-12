@@ -4,6 +4,8 @@ import java.sql.Date;
 
 public class GarbageSpotHistory {
   
+  // TODO The mass property might need to be removed. There is no way to measure it.
+  
   private int m_garbageSpotID;
   private double m_mass;
   private double m_volume;
