@@ -48,11 +48,17 @@
     </div>
   </div>
   
+  <button type="submit" class="btn btn-primary" onclick="displayAllSpots( this, event )">
+    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+    Identify
+  </button>
+  
   <!-- Import JQuery JavaScript Library -->
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
   <!-- Import Bootstrap JavaScript Library -->
   <script src="../lib/bootstrap/js/bootstrap.js"></script>
   <!-- Import Bootstrap Switch JavaScript Library -->
   <script src="../lib/bootstrap-switch/js/bootstrap-switch.js"></script>
+  <script type="text/javascript" src="../js/garbagespot.js"></script>
 </body>
 </html>
