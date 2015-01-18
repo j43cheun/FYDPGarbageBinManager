@@ -50,7 +50,7 @@
   
   <button type="submit" class="btn btn-primary" onclick="displayAllSpots( this, event )">
     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-    Identify
+    Current Garbage Spots
   </button>
   
   <!-- Import JQuery JavaScript Library -->
