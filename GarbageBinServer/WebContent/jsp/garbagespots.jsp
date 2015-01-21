@@ -47,11 +47,27 @@
       </div>
     </div>
   </div>
-  
-  <button type="submit" class="btn btn-primary" onclick="displayAllSpots( this, event )">
+ <div class="input-group-btn">
+	<button type="submit" class="btn btn-primary" onclick="displayAllSpots( this, event )">
     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-    Current Garbage Spots
-  </button>
+   		Current Garbage Spots
+ 	</button>
+</div>
+<table class="table table-striped">
+      <thead>
+          <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>Latitude</th>
+              <th>Longitude</th>
+          </tr>
+      </thead>
+      <tbody id="spotTableRows">
+          <tr>
+
+          </tr>
+      </tbody>
+  </table>
   
   <!-- Import JQuery JavaScript Library -->
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
