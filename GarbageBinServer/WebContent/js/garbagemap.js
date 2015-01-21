@@ -261,7 +261,7 @@ function addGarbageSpot( object, event ) {
     jsonDataRequestObject.description = description;
     
     var jsonDataRequestString = JSON.stringify( jsonDataRequestObject );
-    
+    console.log("About to make a request");
     $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"addGarbageSpot", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
       var garbageSpotID = jsonDataResponseObject.garbageSpotID;
       
