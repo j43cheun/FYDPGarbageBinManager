@@ -2,12 +2,6 @@ package com.garbagebinserver.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedHashSet;
 
 import javax.servlet.RequestDispatcher;
@@ -18,7 +12,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -126,41 +119,6 @@ public class GarbageMapServlet extends HttpServlet {
       final String description = ( String )jsonDataRequestObject.get( "description" );
       final int garbageSpotID = GarbageNavData.getInstance().addGarbageSpot( name, latitude, longitude, description );
       jsonDataResponseObject.put( "garbageSpotID", garbageSpotID );
-      
-		Connection conn = null;
-		Statement statement = null;
-		ResultSet results; 
-		//Create a new SQL test statement
-		String constructing = "INSERT INTO `garbagespot`(`id`, `name`, `latitude`, `longitude`) "
-				+ "VALUES (?,?,?,?)";
-		JSONObject finalObject = new JSONObject();
-		System.out.println(constructing);
-		
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			try {
-				//Set up the connection to the database on port 3306 (default)
-				//With username root and password fydp
-				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
-
-				//Perform a query
-				PreparedStatement preparedStatement = conn.prepareStatement(constructing);
-				preparedStatement.setInt(1, idCounter);
-				preparedStatement.setString(2, name);
-				preparedStatement.setDouble(3, latitude);
-				preparedStatement.setDouble(4, longitude);
-				preparedStatement.executeUpdate();
-				
-				//statement = conn.createStatement();
-				//statement.executeUpdate(constructing);
-				idCounter++;
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 	}
 	
 	protected void computeGarbageClusters( JSONObject jsonDataRequestObject ) {

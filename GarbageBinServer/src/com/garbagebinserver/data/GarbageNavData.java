@@ -1,7 +1,15 @@
 package com.garbagebinserver.data;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+
+import org.json.simple.JSONObject;
 
 import com.garbagebinserver.clusteranalysis.Coordinates;
 import com.garbagebinserver.clusteranalysis.KMeansCluster;
@@ -27,6 +35,8 @@ public class GarbageNavData {
   public static GarbageNavData getInstance() {
     if( m_instance == null ) {
       m_instance = new GarbageNavData();
+      
+      // Initialize garbage spot list.
     }
     
     return m_instance;
@@ -40,10 +50,42 @@ public class GarbageNavData {
     // Will need Evgeny's help with this!
     // Also need to check boundaries!
     
-    int garbageSpotID = m_nextGarbageSpotID++;
+    int garbageSpotID = m_nextGarbageSpotID;
     GarbageSpot garbageSpot = new GarbageSpot( garbageSpotID, name, latitude, longitude, description );
     m_garbageSpotTable.put( garbageSpotID, garbageSpot );
     m_availableGarbageSpotsByID.add( garbageSpotID );
+    
+    //Doing DB stuff here
+    Connection conn = null;
+	//Create a new SQL test statement
+	String constructing = "INSERT INTO `garbagespot`(`id`, `name`, `latitude`, `longitude`) "
+			+ "VALUES (?,?,?,?)";
+	
+	try {
+		Class.forName("com.mysql.jdbc.Driver");
+		try {
+			//Set up the connection to the database on port 3306 (default)
+			//With username root and password fydp
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+
+			//Perform a query
+			PreparedStatement preparedStatement = conn.prepareStatement(constructing);
+			preparedStatement.setInt(1, garbageSpotID);
+			preparedStatement.setString(2, name);
+			preparedStatement.setDouble(3, latitude);
+			preparedStatement.setDouble(4, longitude);
+			preparedStatement.executeUpdate();
+			
+			//If succesful, increment counter
+			m_nextGarbageSpotID++;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	} catch (ClassNotFoundException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
+    
     return garbageSpotID;
   }
   
