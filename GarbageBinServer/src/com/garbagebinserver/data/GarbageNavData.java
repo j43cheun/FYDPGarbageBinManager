@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.garbagebinserver.clusteranalysis.Coordinates;
@@ -30,13 +31,50 @@ public class GarbageNavData {
     m_garbageSpotTable = new LinkedHashMap<Integer, GarbageSpot>();
     m_kmeansClusterTable = new LinkedHashMap<Integer, KMeansCluster>();
     m_availableGarbageSpotsByID = new LinkedHashSet<Integer>();
+    
+    // Initialize garbage spot list.
+    Connection conn = null;
+    Statement statement = null;
+    ResultSet results; 
+    //Create a new SQL test statement
+    String constructing = "SELECT * FROM `garbagespot` WHERE 1";
+    JSONObject finalObject = new JSONObject();
+  
+    try {
+	  try {
+	    Class.forName("com.mysql.jdbc.Driver");
+			
+		//Set up the connection to the database on port 3306 (default)
+		//To database robot1
+		//With username root and password fydp
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+
+		//Perform a query
+		statement = conn.createStatement();
+		results = statement.executeQuery(constructing);
+		JSONArray allSpots = new JSONArray();
+		while (results.next()) {			    
+		    int garbageSpotId = results.getInt("id");
+		    String garbageSpotName = results.getString("name");
+		    double garbageSpotLat = results.getDouble("latitude");
+		    double garbageSpotLong = results.getDouble("longitude");
+		    
+		    GarbageSpot newSpot = new GarbageSpot(garbageSpotId, 
+		    		garbageSpotName, garbageSpotLat, garbageSpotLong, "");
+		    m_garbageSpotTable.put(results.getInt("id"), newSpot);
+		}				
+	  } catch (SQLException e) {
+	    e.printStackTrace();
+	  }
+    }
+    catch( Exception e ) {
+	    e.printStackTrace();
+    }
   }
   
   public static GarbageNavData getInstance() {
     if( m_instance == null ) {
       m_instance = new GarbageNavData();
-      
-      // Initialize garbage spot list.
     }
     
     return m_instance;
