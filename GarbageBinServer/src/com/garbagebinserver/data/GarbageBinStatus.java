@@ -1,0 +1,101 @@
+package com.garbagebinserver.data;
+
+import java.util.Map;
+
+import org.json.simple.JSONObject;
+
+import com.garbagebinserver.data.GarbageBinJSONConstants;
+import com.garbagebinserver.clusteranalysis.Coordinates;
+import com.garbagebinserver.clusteranalysis.GPSCoordinates;
+
+/**
+ * This is a container class that encapsulates a Garbage Bin's current status
+ * in a Java object. It also provides utilities for converting from a JSON object
+ * to a Java object.
+ * @author Zored
+ *
+ */
+public class GarbageBinStatus {
+
+	public GPSCoordinates getCoordinate() {
+		return coordinate;
+	}
+
+	public void setCoordinate(GPSCoordinates coordinate) {
+		this.coordinate = coordinate;
+	}
+
+	public double getBattery() {
+		return battery;
+	}
+
+	public void setBattery(double battery) {
+		this.battery = battery;
+	}
+
+	public double getCapacity() {
+		return capacity;
+	}
+
+	public void setCapacity(double capacity) {
+		this.capacity = capacity;
+	}
+
+	public Long getBinID() {
+		return binID;
+	}
+	
+	public GarbageBinStatus(long binID, GPSCoordinates coordinate, double battery, double capacity)
+	{
+		this.binID = binID;
+		this.coordinate = coordinate;
+		this.battery = battery;
+		this.capacity = capacity;
+	}
+	
+	public static GarbageBinStatus getStatusObjectFromJsonObject(Map<Object, Object> jsonStatusMap)
+	{
+		Long binID = (Long) jsonStatusMap.get(GarbageBinJSONConstants.BIN_ID); 
+		
+		GPSCoordinates coordinates;
+		{
+			JSONObject jsonLocation = (JSONObject) jsonStatusMap.get(GarbageBinJSONConstants.LOCATION);
+			double latitude = (Double) jsonLocation.get(GarbageBinJSONConstants.LATITUDE);
+			double longitude = (Double) jsonLocation.get(GarbageBinJSONConstants.LONGITUDE);
+			coordinates = new GPSCoordinates(latitude, longitude);
+		}
+
+		double battery = (Double) jsonStatusMap.get(GarbageBinJSONConstants.BATTERY);
+		double capacity = (Double) jsonStatusMap.get(GarbageBinJSONConstants.CAPACITY);
+		return new GarbageBinStatus(binID,coordinates, battery, capacity);
+	}
+	
+	@Override
+	public String toString()
+	{
+		String toFormat = "Bin ID: %d \nLocation: \n\tLatitude: %f \n\tLongitude: %f \nBattery: %f \nCapacity: %f";
+		return String.format(toFormat, binID, coordinate.getLatitude(), coordinate.getLongitude(), battery, capacity );
+	}
+	
+	//There is probably a way around these generic warnings, but I dunno. ~_~ -Zored
+	@SuppressWarnings("unchecked")
+	public JSONObject convertToJSON()
+	{
+		JSONObject returnJSONObject = new JSONObject();
+		{
+			JSONObject jsonLocation = new JSONObject();
+			jsonLocation.put(GarbageBinJSONConstants.LATITUDE, coordinate.getLatitude());
+			jsonLocation.put(GarbageBinJSONConstants.LONGITUDE, coordinate.getLongitude());
+			returnJSONObject.put(GarbageBinJSONConstants.LOCATION, jsonLocation);
+		}
+		returnJSONObject.put(GarbageBinJSONConstants.BATTERY, battery);
+		returnJSONObject.put(GarbageBinJSONConstants.CAPACITY, capacity);
+		return returnJSONObject;
+	}
+	
+	private GPSCoordinates coordinate;
+	private double battery;
+	private double capacity;
+	private Long binID;
+
+}

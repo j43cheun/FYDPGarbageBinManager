@@ -18,3 +18,11 @@ function displayAllSpots( object, event ) {
     
 	return false;
 }
+
+function getData( object, event )
+{
+	$.getJSON("http://localhost:3000/status/laststatus", {},  function( jsonDataResponseObject ) 
+	{
+		$('#binText1').val(JSON.stringify(jsonDataResponseObject));
+	});
+}

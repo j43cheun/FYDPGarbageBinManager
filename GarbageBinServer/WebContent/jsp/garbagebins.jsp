@@ -40,25 +40,39 @@
       </button>
       <div class="collapse navbar-collapse navHeaderCollapse">
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="garbagebins.jsp">Garbage BINS</a></li>
+          <li class="active"><a href="garbagebins.jsp">Garbage BINS</a></li>
           <li><a href="garbagemap.jsp">Garbage MAP</a></li>
-          <li class="active"><a href="garbagespots.jsp">Garbage SPOTS</a></li>
+          <li><a href="garbagespots.jsp">Garbage SPOTS</a></li>
         </ul>
       </div>
     </div>
   </div>
-  
-  <button type="submit" class="btn btn-primary" onclick="displayAllSpots( this, event )">
-    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-    Current Garbage Spots
-  </button>
-  
-  <!-- Import JQuery JavaScript Library -->
+
+
+	<div class="container">
+	<textarea id="binText1">
+ 			Hello
+    </textarea>
+	</div>
+
+	<button type="submit" class="btn btn-primary"
+		onclick="getData( this, event )">
+		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+		Get Last Known Data
+	</button>
+
+	<button type="submit" class="btn btn-primary"
+		onclick="askForUpdate( this, event )">
+		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+		Request for update
+	</button>
+
+	<!-- Import JQuery JavaScript Library -->
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
   <!-- Import Bootstrap JavaScript Library -->
   <script src="../lib/bootstrap/js/bootstrap.js"></script>
   <!-- Import Bootstrap Switch JavaScript Library -->
   <script src="../lib/bootstrap-switch/js/bootstrap-switch.js"></script>
-  <script type="text/javascript" src="../js/garbagespot.js"></script>
+  <script type="text/javascript" src="../js/garbagebins.js"></script>
 </body>
 </html>

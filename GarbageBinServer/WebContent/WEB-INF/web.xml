@@ -7,4 +7,13 @@
   <listener>
     <listener-class>com.garbagebinserver.network.GarbageNavigatorContextListener</listener-class>
   </listener>
+    <servlet>
+    <servlet-name>GarbageBinServlet</servlet-name>
+    <servlet-class>com.garbagebinserver.servlets.GarbageBinServlet
+      </servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GarbageBinServlet</servlet-name>
+    <url-pattern>/GarbageBinServlet/*</url-pattern>
+  </servlet-mapping>
 </web-app>
