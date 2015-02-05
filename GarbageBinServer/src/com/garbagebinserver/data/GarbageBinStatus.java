@@ -17,6 +17,26 @@ import com.garbagebinserver.clusteranalysis.GPSCoordinates;
  */
 public class GarbageBinStatus {
 
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public Long getPort() {
+		return port;
+	}
+
+	public void setPort(Long port) {
+		this.port = port;
+	}
+
+	public void setBinID(Long binID) {
+		this.binID = binID;
+	}
+	
 	public GPSCoordinates getCoordinate() {
 		return coordinate;
 	}
@@ -45,12 +65,20 @@ public class GarbageBinStatus {
 		return binID;
 	}
 	
-	public GarbageBinStatus(long binID, GPSCoordinates coordinate, double battery, double capacity)
+	public GarbageBinStatus(
+			long binID,
+			GPSCoordinates coordinate,
+			double battery,
+			double capacity,
+			String ip,
+			Long port)
 	{
 		this.binID = binID;
 		this.coordinate = coordinate;
 		this.battery = battery;
 		this.capacity = capacity;
+		this.ip = ip;
+		this.port = port;
 	}
 	
 	public static GarbageBinStatus getStatusObjectFromJsonObject(Map<Object, Object> jsonStatusMap)
@@ -64,17 +92,20 @@ public class GarbageBinStatus {
 			double longitude = (Double) jsonLocation.get(GarbageBinJSONConstants.LONGITUDE);
 			coordinates = new GPSCoordinates(latitude, longitude);
 		}
-
 		double battery = (Double) jsonStatusMap.get(GarbageBinJSONConstants.BATTERY);
 		double capacity = (Double) jsonStatusMap.get(GarbageBinJSONConstants.CAPACITY);
-		return new GarbageBinStatus(binID,coordinates, battery, capacity);
+		String ip = (String) jsonStatusMap.get(GarbageBinJSONConstants.IP);
+		long port = (Long) jsonStatusMap.get(GarbageBinJSONConstants.PORT);
+		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port);
 	}
 	
 	@Override
 	public String toString()
 	{
-		String toFormat = "Bin ID: %d \nLocation: \n\tLatitude: %f \n\tLongitude: %f \nBattery: %f \nCapacity: %f";
-		return String.format(toFormat, binID, coordinate.getLatitude(), coordinate.getLongitude(), battery, capacity );
+		String toFormat = "Bin ID: %d \nLocation: \n\tLatitude: %f \n\tLongitude: %f "
+				+ "\nBattery: %f \nCapacity: %f \nIP: %s \nPort: %d";
+		return String.format(toFormat, binID, coordinate.getLatitude(),
+				coordinate.getLongitude(), battery, capacity, ip, port);
 	}
 	
 	//There is probably a way around these generic warnings, but I dunno. ~_~ -Zored
@@ -82,6 +113,7 @@ public class GarbageBinStatus {
 	public JSONObject convertToJSON()
 	{
 		JSONObject returnJSONObject = new JSONObject();
+		returnJSONObject.put(GarbageBinJSONConstants.BIN_ID, binID);
 		{
 			JSONObject jsonLocation = new JSONObject();
 			jsonLocation.put(GarbageBinJSONConstants.LATITUDE, coordinate.getLatitude());
@@ -90,6 +122,8 @@ public class GarbageBinStatus {
 		}
 		returnJSONObject.put(GarbageBinJSONConstants.BATTERY, battery);
 		returnJSONObject.put(GarbageBinJSONConstants.CAPACITY, capacity);
+		returnJSONObject.put(GarbageBinJSONConstants.IP, ip);
+		returnJSONObject.put(GarbageBinJSONConstants.PORT, port);
 		return returnJSONObject;
 	}
 	
@@ -97,5 +131,6 @@ public class GarbageBinStatus {
 	private double battery;
 	private double capacity;
 	private Long binID;
-
+	private String ip;
+	private Long port;
 }

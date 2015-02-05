@@ -34,9 +34,12 @@ public class GarbageBinServlet extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * A get call simply returns all of the garbage bin status data that is stored in
+	 * the server at this moment in time.
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		//Simply write back the entire JSON status store to the response. Authentication be damned.
+		response.getOutputStream().print(GarbageBinDataStore.getJSONObjectString());
 	}
 
 	/**
@@ -56,6 +59,7 @@ public class GarbageBinServlet extends HttpServlet {
 		    // We add the bin status to our global status store.
 		    GarbageBinDataStore.addStatus(gbStatus);
 		    System.out.println(GarbageBinDataStore.getJSONObjectString());
+		    response.getOutputStream().print(GarbageBinDataStore.getJSONObjectString());
 		}
 
 }

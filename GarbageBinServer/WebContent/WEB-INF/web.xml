@@ -7,7 +7,7 @@
   <listener>
     <listener-class>com.garbagebinserver.network.GarbageNavigatorContextListener</listener-class>
   </listener>
-    <servlet>
+  <servlet>
     <servlet-name>GarbageBinServlet</servlet-name>
     <servlet-class>com.garbagebinserver.servlets.GarbageBinServlet
       </servlet-class>

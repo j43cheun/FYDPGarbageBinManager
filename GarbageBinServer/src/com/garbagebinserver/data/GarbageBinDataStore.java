@@ -64,5 +64,6 @@ public class GarbageBinDataStore {
 	
 	// This is a global hash map that allows for the servlets to access the in memory
 	// garbage status data. It maps a bin id to a status.
-	private static ConcurrentHashMap<Long, GarbageBinStatus> statusMap = new ConcurrentHashMap<Long, GarbageBinStatus>();
+	private static ConcurrentHashMap<Long, GarbageBinStatus> statusMap =
+			new ConcurrentHashMap<Long, GarbageBinStatus>();
 }

@@ -1,1 +1,3 @@
 @CHARSET "ISO-8859-1";
+/* Reference: http://stackoverflow.com/a/16864694 */
+.hiddenRow {padding: 0 !important;};

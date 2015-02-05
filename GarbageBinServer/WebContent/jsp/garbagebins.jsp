@@ -48,24 +48,42 @@
     </div>
   </div>
 
-
-	<div class="container">
-	<textarea id="binText1">
- 			Hello
-    </textarea>
-	</div>
-
 	<button type="submit" class="btn btn-primary"
-		onclick="getData( this, event )">
+		onclick="requestUpdateFromBackEnd()">
 		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 		Get Last Known Data
 	</button>
 
-	<button type="submit" class="btn btn-primary"
-		onclick="askForUpdate( this, event )">
-		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-		Request for update
-	</button>
+	<!-- Reference of sorts: http://stackoverflow.com/a/24148900 -->
+	<div class="container panel-group" id="parentDiv">
+		<table class="table table-condensed" style="border-collapse:collapse;" id="trashTable">
+		<thead>
+			<tr>
+				<th>
+				Bin ID
+				</th>
+				<th>
+				Capacity
+				</th>
+				<th>
+				Battery
+				</th>
+				<th>
+				Latitude
+				</th>
+				<th>
+				Longitude
+				</th>
+				<th>
+				Update
+				</th>
+			</tr>
+		</thead>
+		<!-- Garbage bin fields go here. -->
+		<tbody id="trashTableBody">
+		</tbody>
+		</table>
+	</div>
 
 	<!-- Import JQuery JavaScript Library -->
   <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
