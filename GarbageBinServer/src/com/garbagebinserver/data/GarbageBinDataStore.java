@@ -62,6 +62,11 @@ public class GarbageBinDataStore {
 		return getJSONObject().toJSONString();
 	}
 	
+	public static int getNumberOfbins()
+	{
+		return statusMap.size();
+	}
+	
 	// This is a global hash map that allows for the servlets to access the in memory
 	// garbage status data. It maps a bin id to a status.
 	private static ConcurrentHashMap<Long, GarbageBinStatus> statusMap =

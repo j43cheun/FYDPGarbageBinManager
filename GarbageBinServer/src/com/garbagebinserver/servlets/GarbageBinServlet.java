@@ -2,6 +2,8 @@ package com.garbagebinserver.servlets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,10 +17,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import com.garbagebinserver.data.GarbageBinDataStore;
+import com.garbagebinserver.data.GarbageBinJSONConstants;
 import com.garbagebinserver.data.GarbageBinStatus;
 
 /**
  * Servlet implementation class GarbageBinServlet
+ * THIS SERVLET NEEDS TO BE SPLIT INTO 2 as specified in the API.
  */
 @WebServlet("/GarbageBinServlet")
 public class GarbageBinServlet extends HttpServlet {
@@ -47,19 +51,76 @@ public class GarbageBinServlet extends HttpServlet {
 	 * its information to the server.
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@SuppressWarnings("unchecked")
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-			System.out.println("Post received.");
+			//System.out.println("Post received.");
 		    JSONObject jsonDataRequestObject;
 		    BufferedReader in = request.getReader();
 		    jsonDataRequestObject = ( JSONObject )JSONValue.parse(in);
-		    GarbageBinStatus gbStatus = GarbageBinStatus.getStatusObjectFromJsonObject(jsonDataRequestObject);
-		    System.out.println(jsonDataRequestObject);
-		    System.out.println(gbStatus.toString());
+		    GarbageBinStatus gbStatus = GarbageBinStatus.getStatusObjectFromJsonObjectMap(jsonDataRequestObject);
+		    //System.out.println(jsonDataRequestObject);
+		    //System.out.println(gbStatus.toString());
 		    
 		    // We add the bin status to our global status store.
 		    GarbageBinDataStore.addStatus(gbStatus);
+		    //System.out.println(GarbageBinDataStore.getJSONObjectString());
+		    //response.getOutputStream().print(GarbageBinDataStore.getJSONObjectString());
+		    JSONObject responseObject = new JSONObject();
+		    responseObject.put("success", true);
+		    response.getOutputStream().print(responseObject.toJSONString());
+		    
+		    long binID = gbStatus.getBinID();
+		    List<Thread> threadArray = new ArrayList<>();
+		    for(int i = 0; i < 300; i++)
+		    {
+		    	ThreadClass t = new ThreadClass(binID + i, jsonDataRequestObject);
+		    	threadArray.add(new Thread(t));
+		    }
+		    System.out.println("Starting thread work");
+		    for(Thread t : threadArray)
+		    {
+		    	t.start();
+		    }
+		    
+		    try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    
+		    for(Thread t : threadArray)
+		    {
+		    	try {
+					t.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    }
+		    
+		    System.out.println("Finished thread work");
 		    System.out.println(GarbageBinDataStore.getJSONObjectString());
-		    response.getOutputStream().print(GarbageBinDataStore.getJSONObjectString());
 		}
+	
+	class ThreadClass implements Runnable {
 
+		private JSONObject jsonObject;
+		public ThreadClass(long newBinID, JSONObject jsonObject_ )
+		{
+			JSONObject jsonObject = ( JSONObject )JSONValue.parse(jsonObject_.toJSONString());
+			jsonObject.put(GarbageBinJSONConstants.BIN_ID, newBinID);
+			this.jsonObject = jsonObject;
+		}
+		
+		@Override
+		public void run() {
+			GarbageBinStatus gbStatus = GarbageBinStatus.getStatusObjectFromJsonObjectMap(jsonObject);
+			GarbageBinDataStore.addStatus(gbStatus);
+			System.out.print("In thread with id.");
+			System.out.print(jsonObject.get(GarbageBinJSONConstants.BIN_ID));
+			System.out.print("\n");
+		}
+		
+	}
 }

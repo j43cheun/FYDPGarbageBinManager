@@ -1,5 +1,7 @@
 package com.garbagebinserver.data;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import org.json.simple.JSONObject;
@@ -81,7 +83,7 @@ public class GarbageBinStatus {
 		this.port = port;
 	}
 	
-	public static GarbageBinStatus getStatusObjectFromJsonObject(Map<Object, Object> jsonStatusMap)
+	public static GarbageBinStatus getStatusObjectFromJsonObjectMap(Map<Object, Object> jsonStatusMap)
 	{
 		Long binID = (Long) jsonStatusMap.get(GarbageBinJSONConstants.BIN_ID); 
 		
@@ -96,6 +98,38 @@ public class GarbageBinStatus {
 		double capacity = (Double) jsonStatusMap.get(GarbageBinJSONConstants.CAPACITY);
 		String ip = (String) jsonStatusMap.get(GarbageBinJSONConstants.IP);
 		long port = (Long) jsonStatusMap.get(GarbageBinJSONConstants.PORT);
+		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port);
+	}
+	
+	/**
+	 * The previous function takes in a org.json.simple.JSONObject. This one takes in a 
+	 * org.json.JSONObject. /Shrug
+	 * @param jsonObject
+	 * @return
+	 */
+	public static GarbageBinStatus getStatusObjectFromJsonObject(org.json.JSONObject jsonObject)
+	{
+		Long binID = jsonObject.getLong(GarbageBinJSONConstants.BIN_ID);
+		GPSCoordinates coordinates;
+		{
+			org.json.JSONObject jsonLocation = jsonObject.getJSONObject(GarbageBinJSONConstants.LOCATION);
+			double latitude = jsonLocation.getDouble(GarbageBinJSONConstants.LATITUDE);
+			double longitude = jsonLocation.getDouble(GarbageBinJSONConstants.LONGITUDE);
+			coordinates = new GPSCoordinates(latitude, longitude);
+		}
+		double battery = jsonObject.getDouble(GarbageBinJSONConstants.BATTERY);
+		double capacity = jsonObject.getDouble(GarbageBinJSONConstants.CAPACITY);
+		String ip = jsonObject.getString(GarbageBinJSONConstants.IP);
+		long port = jsonObject.getLong(GarbageBinJSONConstants.PORT);
+		String date = jsonObject.getString(GarbageBinJSONConstants.TIMESTAMP);
+		
+		//I couldn't find a built in formatter that worked, so had to roll my own. :(
+		//2015-02-11T08:15:52.778Z
+		DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("y-M-d'T'H:m:s'.'n'Z'");
+								
+		LocalDateTime parsedTimeStamp = LocalDateTime.parse(date, formatter);
+		System.out.println(parsedTimeStamp.toString());
 		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port);
 	}
 	
