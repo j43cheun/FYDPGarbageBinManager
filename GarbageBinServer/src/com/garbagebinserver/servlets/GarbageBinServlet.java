@@ -58,49 +58,15 @@ public class GarbageBinServlet extends HttpServlet {
 		    BufferedReader in = request.getReader();
 		    jsonDataRequestObject = ( JSONObject )JSONValue.parse(in);
 		    GarbageBinStatus gbStatus = GarbageBinStatus.getStatusObjectFromJsonObjectMap(jsonDataRequestObject);
-		    //System.out.println(jsonDataRequestObject);
-		    //System.out.println(gbStatus.toString());
-		    
+
 		    // We add the bin status to our global status store.
 		    GarbageBinDataStore.addStatus(gbStatus);
-		    //System.out.println(GarbageBinDataStore.getJSONObjectString());
-		    //response.getOutputStream().print(GarbageBinDataStore.getJSONObjectString());
+
 		    JSONObject responseObject = new JSONObject();
 		    responseObject.put("success", true);
 		    response.getOutputStream().print(responseObject.toJSONString());
 		    
-		    long binID = gbStatus.getBinID();
-		    List<Thread> threadArray = new ArrayList<>();
-		    for(int i = 0; i < 300; i++)
-		    {
-		    	ThreadClass t = new ThreadClass(binID + i, jsonDataRequestObject);
-		    	threadArray.add(new Thread(t));
-		    }
-		    System.out.println("Starting thread work");
-		    for(Thread t : threadArray)
-		    {
-		    	t.start();
-		    }
-		    
-		    try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		    
-		    for(Thread t : threadArray)
-		    {
-		    	try {
-					t.join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		    }
-		    
-		    System.out.println("Finished thread work");
-		    System.out.println(GarbageBinDataStore.getJSONObjectString());
+		    System.out.printf("Received status update from bin with ID: %d %n", gbStatus.getBinID());
 		}
 	
 	class ThreadClass implements Runnable {
