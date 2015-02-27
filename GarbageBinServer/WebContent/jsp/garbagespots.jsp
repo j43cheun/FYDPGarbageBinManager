@@ -40,7 +40,7 @@
       </button>
       <div class="collapse navbar-collapse navHeaderCollapse">
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="#TODO">Garbage BINS</a></li>
+          <li><a href="garbagebins.jsp">Garbage BINS</a></li>
           <li><a href="garbagemap.jsp">Garbage MAP</a></li>
           <li class="active"><a href="garbagespots.jsp">Garbage SPOTS</a></li>
         </ul>
