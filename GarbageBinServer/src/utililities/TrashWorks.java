@@ -45,4 +45,5 @@ public class TrashWorks {
 	{
 		return false;
 	}
+	
 }

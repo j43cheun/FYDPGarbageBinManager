@@ -61,32 +61,10 @@ public class GarbageBinServlet extends HttpServlet {
 
 		    // We add the bin status to our global status store.
 		    GarbageBinDataStore.addStatus(gbStatus);
-
 		    JSONObject responseObject = new JSONObject();
 		    responseObject.put("success", true);
 		    response.getOutputStream().print(responseObject.toJSONString());
 		    
 		    System.out.printf("Received status update from bin with ID: %d %n", gbStatus.getBinID());
 		}
-	
-	class ThreadClass implements Runnable {
-
-		private JSONObject jsonObject;
-		public ThreadClass(long newBinID, JSONObject jsonObject_ )
-		{
-			JSONObject jsonObject = ( JSONObject )JSONValue.parse(jsonObject_.toJSONString());
-			jsonObject.put(GarbageBinJSONConstants.BIN_ID, newBinID);
-			this.jsonObject = jsonObject;
-		}
-		
-		@Override
-		public void run() {
-			GarbageBinStatus gbStatus = GarbageBinStatus.getStatusObjectFromJsonObjectMap(jsonObject);
-			GarbageBinDataStore.addStatus(gbStatus);
-			System.out.print("In thread with id.");
-			System.out.print(jsonObject.get(GarbageBinJSONConstants.BIN_ID));
-			System.out.print("\n");
-		}
-		
-	}
 }

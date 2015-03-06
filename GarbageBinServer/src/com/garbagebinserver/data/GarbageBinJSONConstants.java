@@ -15,4 +15,5 @@ public class GarbageBinJSONConstants {
 	public static String TIMESTAMP = "timestamp";
 	public static String IP = "ip";
 	public static String PORT = "port";
+	public static String ERROR = "error";
 }

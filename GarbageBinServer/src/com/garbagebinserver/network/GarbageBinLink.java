@@ -1,7 +1,12 @@
 package com.garbagebinserver.network;
 
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.json.JSONObject;
 
+import com.garbagebinserver.data.GarbageBinDataStore;
 import com.garbagebinserver.data.GarbageBinStatus;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -9,7 +14,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 /**
- * This class provides utilities to query a given garbage bin.
+ * This class provides utilities to query a given garbage bin or all garbage bins.
  * @author Zored
  *
  */
@@ -58,5 +63,37 @@ public class GarbageBinLink {
 			return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * This function requests an update from all garbage bins. If it fails for some reason,
+	 * this function will set the error field in the JSON to true.
+	 * This won't stop future attempts to contact the garbage bin, but they will just all
+	 * fail as well. The administration ui will have a remove all disconnected bins feature.
+	 * Note that this function does not actually get the updated status, it simply requests
+	 * all bins to send it to us.
+	 */
+	public static void requestUpdateForAllBins()
+	{
+		ConcurrentHashMap<Long, GarbageBinStatus> binMap = GarbageBinDataStore.getStatusMap();
+		Set<Entry<Long, GarbageBinStatus>> binEntrySet = binMap.entrySet();
+		for(Entry<Long, GarbageBinStatus> statusSet : binEntrySet)
+		{
+			GarbageBinStatus binStatus = statusSet.getValue();
+			String destination = binStatus.getIp();
+			long port = binStatus.getPort();
+			
+			//We attempt to request an update to the status.
+			if (requestUpdateToStatus(destination, port))
+			{
+				binStatus.setError(false);
+			}
+			else
+			{
+				//We encountered an error asking for a status update for reasons
+				//we don't really care about. :/
+				binStatus.setError(true);
+			}
+		}
 	}
 }

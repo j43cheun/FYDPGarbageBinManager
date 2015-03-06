@@ -67,13 +67,33 @@ public class GarbageBinStatus {
 		return binID;
 	}
 	
+	public LocalDateTime getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(LocalDateTime timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+	
+	public void setError(boolean error)
+	{
+		this.error = error;
+	}
+	
+	public boolean hasError() {
+		return error;
+	}
+	
 	public GarbageBinStatus(
 			long binID,
 			GPSCoordinates coordinate,
 			double battery,
 			double capacity,
 			String ip,
-			Long port)
+			Long port,
+			LocalDateTime timeStamp,
+			boolean error)
 	{
 		this.binID = binID;
 		this.coordinate = coordinate;
@@ -81,6 +101,8 @@ public class GarbageBinStatus {
 		this.capacity = capacity;
 		this.ip = ip;
 		this.port = port;
+		this.timeStamp = timeStamp;
+		this.error = error;
 	}
 	
 	public static GarbageBinStatus getStatusObjectFromJsonObjectMap(Map<Object, Object> jsonStatusMap)
@@ -98,12 +120,32 @@ public class GarbageBinStatus {
 		double capacity = (Double) jsonStatusMap.get(GarbageBinJSONConstants.CAPACITY);
 		String ip = (String) jsonStatusMap.get(GarbageBinJSONConstants.IP);
 		long port = (Long) jsonStatusMap.get(GarbageBinJSONConstants.PORT);
-		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port);
+		
+		String date = (String) jsonStatusMap.get(GarbageBinJSONConstants.TIMESTAMP);
+		
+		DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("y-M-d'T'H:m:s'.'n'Z'");
+								
+		LocalDateTime parsedTimeStamp = LocalDateTime.parse(date, formatter);
+		
+		boolean error;
+		if (jsonStatusMap.containsKey(GarbageBinJSONConstants.ERROR))
+		{
+			error = (boolean)jsonStatusMap.get(GarbageBinJSONConstants.ERROR);
+		}
+		else
+		{
+			error = false; //Assume no error if the field is not present.
+		}
+		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port, parsedTimeStamp, error);
 	}
 	
 	/**
 	 * The previous function takes in a org.json.simple.JSONObject. This one takes in a 
 	 * org.json.JSONObject. /Shrug
+	 * Sorry about the confusion, but unfortunately, simple json is used in the servlet side of things
+	 * but the request library which is used to make requests operates with org.json.JSONObject. :(
+	 * Maybe, I should move the servlet to use org.JSON as well, but oh well. Not a big deal.
 	 * @param jsonObject
 	 * @return
 	 */
@@ -130,16 +172,26 @@ public class GarbageBinStatus {
 								
 		LocalDateTime parsedTimeStamp = LocalDateTime.parse(date, formatter);
 		System.out.println(parsedTimeStamp.toString());
-		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port);
+
+		boolean error;
+		if (jsonObject.has(GarbageBinJSONConstants.ERROR))
+		{
+			error = jsonObject.getBoolean(GarbageBinJSONConstants.ERROR);
+		}
+		else
+		{
+			error = false; //Assume no error if the field is not present.
+		}
+		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port, parsedTimeStamp, error);
 	}
 	
 	@Override
 	public String toString()
 	{
 		String toFormat = "Bin ID: %d \nLocation: \n\tLatitude: %f \n\tLongitude: %f "
-				+ "\nBattery: %f \nCapacity: %f \nIP: %s \nPort: %d";
+				+ "\nBattery: %f \nCapacity: %f \nIP: %s \nPort: %d \ntimeStamp : %s \nerror: %b";
 		return String.format(toFormat, binID, coordinate.getLatitude(),
-				coordinate.getLongitude(), battery, capacity, ip, port);
+				coordinate.getLongitude(), battery, capacity, ip, port, timeStamp.toString(), error);
 	}
 	
 	//There is probably a way around these generic warnings, but I dunno. ~_~ -Zored
@@ -158,6 +210,7 @@ public class GarbageBinStatus {
 		returnJSONObject.put(GarbageBinJSONConstants.CAPACITY, capacity);
 		returnJSONObject.put(GarbageBinJSONConstants.IP, ip);
 		returnJSONObject.put(GarbageBinJSONConstants.PORT, port);
+		returnJSONObject.put(GarbageBinJSONConstants.ERROR, error);
 		return returnJSONObject;
 	}
 	
@@ -167,4 +220,6 @@ public class GarbageBinStatus {
 	private Long binID;
 	private String ip;
 	private Long port;
+	private LocalDateTime timeStamp;
+	private boolean error;
 }
