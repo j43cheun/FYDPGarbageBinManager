@@ -7,15 +7,12 @@ public class GarbageBin {
   private int            m_garbageBinID;
   private double         m_currentGarbageVolume;
   private double         m_maxGarbageVolume;
-  private double         m_percentRemainingPower;
   private GPSCoordinates m_currentGPSCoordinate;
-  private GPSCoordinates m_serviceStationGPSCoordinate;
   private String         m_garbageBinIPAddress;
   
   public GarbageBin( final int            garbageBinID, 
                      final double         maxGarbageVolume, 
                      final GPSCoordinates currentGPSCoordinate, 
-                     final GPSCoordinates serviceStationGPSCoordinate, 
                      final String         garbageBinIPAddress ) {
     
     if( maxGarbageVolume <= 0 ) {
@@ -24,9 +21,6 @@ public class GarbageBin {
     else if( currentGPSCoordinate == null ) {
       throw new IllegalArgumentException( "The current GPS coordinate cannot be null!" );
     }
-    else if( serviceStationGPSCoordinate == null ) {
-      throw new IllegalArgumentException( "The service station GPS coordinate cannot be null!" );
-    }
     else if( garbageBinIPAddress == null ) {
       throw new IllegalArgumentException( "The garbage bin IP address cannot be null!" );
     }
@@ -34,9 +28,7 @@ public class GarbageBin {
     m_garbageBinID = garbageBinID;
     m_currentGarbageVolume = 0;
     m_maxGarbageVolume = maxGarbageVolume;
-    m_percentRemainingPower = 100;
     m_currentGPSCoordinate = currentGPSCoordinate;
-    m_serviceStationGPSCoordinate = serviceStationGPSCoordinate;
     m_garbageBinIPAddress = garbageBinIPAddress;
   }
   
@@ -60,10 +52,6 @@ public class GarbageBin {
     return m_maxGarbageVolume;
   }
   
-  public double getPercentRemainingPower() {
-    return m_percentRemainingPower;
-  }
-  
   public void setPercentPowerRemaining( final double percentRemainingPower ) {
     if( percentRemainingPower < 0 ) {
       throw new IllegalArgumentException( "The percent remaining power cannot be negative!" );
@@ -72,10 +60,6 @@ public class GarbageBin {
   
   public GPSCoordinates getCurrentGPSCoordinate() {
     return m_currentGPSCoordinate;
-  }
-  
-  public GPSCoordinates getServiceStationGPSCoordinate() {
-    return m_serviceStationGPSCoordinate;
   }
   
   public void setCurrentGPSCoordinate( final GPSCoordinates currentGPSCoordinate ) {

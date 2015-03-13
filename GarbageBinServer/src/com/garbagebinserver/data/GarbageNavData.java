@@ -31,7 +31,7 @@ public class GarbageNavData {
     m_garbageSpotTable = new LinkedHashMap<Integer, GarbageSpot>();
     m_kmeansClusterTable = new LinkedHashMap<Integer, KMeansCluster>();
     m_availableGarbageSpotsByID = new LinkedHashSet<Integer>();
-    
+    /*
     // Initialize garbage spot list.
     Connection conn = null;
     Statement statement = null;
@@ -41,35 +41,36 @@ public class GarbageNavData {
     JSONObject finalObject = new JSONObject();
   
     try {
-	  try {
-	    Class.forName("com.mysql.jdbc.Driver");
-			
-		//Set up the connection to the database on port 3306 (default)
-		//To database robot1
-		//With username root and password fydp
-		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+      try {
+        Class.forName("com.mysql.jdbc.Driver");
+            
+        //Set up the connection to the database on port 3306 (default)
+        //To database robot1
+        //With username root and password fydp
+        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
 
-		//Perform a query
-		statement = conn.createStatement();
-		results = statement.executeQuery(constructing);
-		JSONArray allSpots = new JSONArray();
-		while (results.next()) {			    
-		    int garbageSpotId = results.getInt("id");
-		    String garbageSpotName = results.getString("name");
-		    double garbageSpotLat = results.getDouble("latitude");
-		    double garbageSpotLong = results.getDouble("longitude");
-		    
-		    GarbageSpot newSpot = new GarbageSpot(garbageSpotId, 
-		    		garbageSpotName, garbageSpotLat, garbageSpotLong, "");
-		    m_garbageSpotTable.put(results.getInt("id"), newSpot);
-		}				
-	  } catch (SQLException e) {
-	    e.printStackTrace();
-	  }
+        //Perform a query
+        statement = conn.createStatement();
+        results = statement.executeQuery(constructing);
+        JSONArray allSpots = new JSONArray();
+        while (results.next()) {                
+            int garbageSpotId = results.getInt("id");
+            String garbageSpotName = results.getString("name");
+            double garbageSpotLat = results.getDouble("latitude");
+            double garbageSpotLong = results.getDouble("longitude");
+            
+            GarbageSpot newSpot = new GarbageSpot(garbageSpotId, 
+                    garbageSpotName, garbageSpotLat, garbageSpotLong, "");
+            m_garbageSpotTable.put(results.getInt("id"), newSpot);
+        }               
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
     }
     catch( Exception e ) {
-	    e.printStackTrace();
+        e.printStackTrace();
     }
+    */
   }
   
   public static GarbageNavData getInstance() {
@@ -93,37 +94,41 @@ public class GarbageNavData {
     m_garbageSpotTable.put( garbageSpotID, garbageSpot );
     m_availableGarbageSpotsByID.add( garbageSpotID );
     
+    // TEMP
+    m_nextGarbageSpotID++;
+    
+    /*
     //Doing DB stuff here
     Connection conn = null;
-	//Create a new SQL test statement
-	String constructing = "INSERT INTO `garbagespot`(`id`, `name`, `latitude`, `longitude`) "
-			+ "VALUES (?,?,?,?)";
-	
-	try {
-		Class.forName("com.mysql.jdbc.Driver");
-		try {
-			//Set up the connection to the database on port 3306 (default)
-			//With username root and password fydp
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
-
-			//Perform a query
-			PreparedStatement preparedStatement = conn.prepareStatement(constructing);
-			preparedStatement.setInt(1, garbageSpotID);
-			preparedStatement.setString(2, name);
-			preparedStatement.setDouble(3, latitude);
-			preparedStatement.setDouble(4, longitude);
-			preparedStatement.executeUpdate();
-			
-			//If succesful, increment counter
-			m_nextGarbageSpotID++;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	} catch (ClassNotFoundException e1) {
-		// TODO Auto-generated catch block
-		e1.printStackTrace();
-	}
+    //Create a new SQL test statement
+    String constructing = "INSERT INTO `garbagespot`(`id`, `name`, `latitude`, `longitude`) "
+            + "VALUES (?,?,?,?)";
     
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        try {
+            //Set up the connection to the database on port 3306 (default)
+            //With username root and password fydp
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+
+            //Perform a query
+            PreparedStatement preparedStatement = conn.prepareStatement(constructing);
+            preparedStatement.setInt(1, garbageSpotID);
+            preparedStatement.setString(2, name);
+            preparedStatement.setDouble(3, latitude);
+            preparedStatement.setDouble(4, longitude);
+            preparedStatement.executeUpdate();
+            
+            //If succesful, increment counter
+            m_nextGarbageSpotID++;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    } catch (ClassNotFoundException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+    }
+    */
     return garbageSpotID;
   }
   
