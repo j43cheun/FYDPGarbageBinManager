@@ -12,15 +12,21 @@
   <!-- Import Bootstrap Switch Core CSS -->
   <link href="../lib/bootstrap-switch/css/bootstrap-switch.css" rel="stylesheet">
   <!-- Import custom CSS for Garbage Bin Navigator -->
-  <link href="../css/styles.css" rel="stylesheet">
+  <!--  <link href="../css/styles.css" rel="stylesheet"> -->
   <!-- Import Google Maps API -->
   <style type="text/css">
     html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
   </style>
+  <!--  /* Reference: http://stackoverflow.com/a/10691568 */ -->
   <style>
     body{
       padding-top:50px;
       padding-bottom: 50px;
+    }
+    .spacer{
+      margin-top: 4%;
+      margin-left: 9%;
+      margin-bottom: 1%;
     }
   </style>
   
@@ -48,11 +54,24 @@
     </div>
   </div>
 
+	<div class="spacer">
 	<button type="submit" class="btn btn-primary"
 		onclick="requestUpdateFromBackEnd()">
 		<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 		Get Last Known Data
 	</button>
+	
+	<!-- Button for turning off auto refresh -->
+	
+	<!-- Dropdown for tuning auto refresh -->
+	<button type="submit" class="btn btn-primary" id="refreshToggleButton"
+		onclick="toggleAutoUpdate()">
+		<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+		<span id="refreshToggleButtonSpan">
+		Turn off auto refresh.
+		</span>
+	</button>
+	</div>
 
 	<!-- Reference of sorts: http://stackoverflow.com/a/24148900 -->
 	<div class="container panel-group" id="parentDiv">
@@ -91,6 +110,7 @@
   <script src="../lib/bootstrap/js/bootstrap.js"></script>
   <!-- Import Bootstrap Switch JavaScript Library -->
   <script src="../lib/bootstrap-switch/js/bootstrap-switch.js"></script>
+  <script type="text/javascript" src="../js/communication.js"></script>
   <script type="text/javascript" src="../js/garbagebins.js"></script>
 </body>
 </html>

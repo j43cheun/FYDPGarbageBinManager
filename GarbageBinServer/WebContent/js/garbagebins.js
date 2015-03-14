@@ -1,7 +1,7 @@
 var binStatusTableFormat = ["binID", "capacity", "battery", "location.latitude", "location.longitude"];
-// We make a single span object that will get attached to every button. This is just a glyphicon showing
-// a refresh icon.
+var updateSpeed = 100000;
 var intervalID;
+var updating = false;
 
 /**
  * When the document is ready, we set a timer for the page to query and get up to date garbage
@@ -11,7 +11,8 @@ $( document ).ready(function() {
 	// Do the initial population of data assuming the server has some. If it doesn't,
 	// we will just get an empty table.
 	requestUpdateFromBackEnd();
-	intervalID = window.setInterval(requestUpdateFromBackEnd, 10000);
+	intervalID = window.setInterval(requestUpdateFromBackEnd, updateSpeed);
+	updating = true;
 });
 
 // Taken from http://stackoverflow.com/a/8052100
@@ -22,6 +23,25 @@ function getPropertyFromString(objectToQuery, stringToQueryAgainst){
 	var queryArray = stringToQueryAgainst.split(".");
 	while(queryArray.length && (objectToQuery = objectToQuery[queryArray.shift()]));
 	return objectToQuery;
+};
+
+// This turns the auto update on or off.
+function toggleAutoUpdate(){
+	updating = !updating;
+	if (!updating){
+		//If we are no longer updating, we clear the refresh interval.
+		window.clearInterval(intervalID);
+		//Turn the button red and change the text.
+		$('#refreshToggleButtonSpan').text('Turn on Auto Refresh.');
+		$('#refreshToggleButton').toggleClass('btn-primary', false);//This removes btn-primary.
+		$('#refreshToggleButton').toggleClass('btn-warning', true);//This adds btn-warning.
+	}
+	else{
+		intervalID = window.setInterval(requestUpdateFromBackEnd, updateSpeed);
+		$('#refreshToggleButtonSpan').text('Turn off Auto Refresh.');
+		$('#refreshToggleButton').toggleClass('btn-warning', false);//This removes btn-warning.
+		$('#refreshToggleButton').toggleClass('btn-primary', true);//This adds btn-primary.
+	}
 }
 
 /**
@@ -114,7 +134,8 @@ function addAccordianRow(jsonStatus, colspan, tableToAddTo){
  * This info will then be displayed on the UI.
  */
 function requestUpdateFromBackEnd(){
-	$.getJSON("http://localhost:8080/GarbageBinServer/GarbageBinServlet", {},  function( jsonDataResponseObject ){
+	//$.getJSON("http://localhost:8080/GarbageBinServer/GarbageBinServlet", {},  function( jsonDataResponseObject ){
+	getAllBins(function(jsonDataResponseObject){
 		//First we go through the divs and make note of the ones that are open. We can
 		//then reopen them when the table is reloaded.
 		var listOfOpenDivIDs = [];
