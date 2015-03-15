@@ -23,7 +23,7 @@ import com.garbagebinserver.data.GarbageSpot;
 public class Main {
 
   public static void main(String[] args) {
-    final String inCsvFile = "C:/Users/Justin/Dropbox/FYDP/ece498b/prototype_data/allocation_sim/sim_1.csv";
+    final String inCsvFile = "C:/Users/Zored/Dropbox/School/FYDP/ece498b/prototype_data/allocation_sim/sim_1.csv";
     
     BufferedReader bufferedReader = null;
     String line = "";

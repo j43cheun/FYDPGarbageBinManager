@@ -19,6 +19,22 @@ import com.garbagebinserver.clusteranalysis.GPSCoordinates;
  */
 public class GarbageBinStatus {
 
+	public double getCurrent_depth() {
+		return currentDepth;
+	}
+
+	public void setCurrent_depth(double current_depth) {
+		this.currentDepth = current_depth;
+	}
+
+	public double getMax_depth() {
+		return maxDepth;
+	}
+
+	public void setMax_depth(double max_depth) {
+		this.maxDepth = max_depth;
+	}
+
 	public String getIp() {
 		return ip;
 	}
@@ -89,7 +105,8 @@ public class GarbageBinStatus {
 			long binID,
 			GPSCoordinates coordinate,
 			double battery,
-			double capacity,
+			double maxDepth,
+			double currentDepth,
 			String ip,
 			Long port,
 			LocalDateTime timeStamp,
@@ -98,11 +115,18 @@ public class GarbageBinStatus {
 		this.binID = binID;
 		this.coordinate = coordinate;
 		this.battery = battery;
-		this.capacity = capacity;
+		this.maxDepth = maxDepth;
+		this.currentDepth = currentDepth;
+		this.capacity = calculateCapacity(maxDepth, currentDepth);
 		this.ip = ip;
 		this.port = port;
 		this.timeStamp = timeStamp;
 		this.error = error;
+	}
+	
+	private static double calculateCapacity(double maxDepth, double currentDepth)
+	{
+		return (currentDepth/maxDepth)*100;
 	}
 	
 	public static GarbageBinStatus getStatusObjectFromJsonObjectMap(Map<Object, Object> jsonStatusMap)
@@ -117,7 +141,11 @@ public class GarbageBinStatus {
 			coordinates = new GPSCoordinates(latitude, longitude);
 		}
 		double battery = (Double) jsonStatusMap.get(GarbageBinJSONConstants.BATTERY);
-		double capacity = (Double) jsonStatusMap.get(GarbageBinJSONConstants.CAPACITY);
+		System.out.println(jsonStatusMap.toString());
+		
+		double maxDepth = (Double) jsonStatusMap.get(GarbageBinJSONConstants.MAX_DEPTH);
+		double currentDepth = (Double) jsonStatusMap.get(GarbageBinJSONConstants.CURRENT_DEPTH);
+		
 		String ip = (String) jsonStatusMap.get(GarbageBinJSONConstants.IP);
 		long port = (Long) jsonStatusMap.get(GarbageBinJSONConstants.PORT);
 		
@@ -137,7 +165,7 @@ public class GarbageBinStatus {
 		{
 			error = false; //Assume no error if the field is not present.
 		}
-		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port, parsedTimeStamp, error);
+		return new GarbageBinStatus(binID,coordinates, battery, maxDepth, currentDepth, ip, port, parsedTimeStamp, error);
 	}
 	
 	/**
@@ -160,7 +188,10 @@ public class GarbageBinStatus {
 			coordinates = new GPSCoordinates(latitude, longitude);
 		}
 		double battery = jsonObject.getDouble(GarbageBinJSONConstants.BATTERY);
-		double capacity = jsonObject.getDouble(GarbageBinJSONConstants.CAPACITY);
+		
+		double maxDepth = jsonObject.getDouble(GarbageBinJSONConstants.MAX_DEPTH);
+		double currentDepth = jsonObject.getDouble(GarbageBinJSONConstants.CURRENT_DEPTH);
+		
 		String ip = jsonObject.getString(GarbageBinJSONConstants.IP);
 		long port = jsonObject.getLong(GarbageBinJSONConstants.PORT);
 		String date = jsonObject.getString(GarbageBinJSONConstants.TIMESTAMP);
@@ -182,7 +213,7 @@ public class GarbageBinStatus {
 		{
 			error = false; //Assume no error if the field is not present.
 		}
-		return new GarbageBinStatus(binID,coordinates, battery, capacity, ip, port, parsedTimeStamp, error);
+		return new GarbageBinStatus(binID,coordinates, battery, maxDepth, currentDepth, ip, port, parsedTimeStamp, error);
 	}
 	
 	@Override
@@ -213,7 +244,8 @@ public class GarbageBinStatus {
 		returnJSONObject.put(GarbageBinJSONConstants.ERROR, error);
 		return returnJSONObject;
 	}
-	
+	private double currentDepth;
+	private double maxDepth;
 	private GPSCoordinates coordinate;
 	private double battery;
 	private double capacity;

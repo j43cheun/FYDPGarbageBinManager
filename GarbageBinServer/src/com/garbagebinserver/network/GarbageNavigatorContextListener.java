@@ -14,7 +14,7 @@ public class GarbageNavigatorContextListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent arg0) {
-	  PollingController.setPollingTime(5 * 1000);
+	  PollingController.setPollingTime(5 * 60 * 1000);
   }
 
 }
