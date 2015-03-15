@@ -11,6 +11,7 @@ public class GarbageBinJSONConstants {
 	public static String LATITUDE = "latitude";
 	public static String LONGITUDE = "longitude";
 	public static String BATTERY = "battery";
+	public static String VOLUME = "volume";
 	public static String CAPACITY = "capacity";
 	public static String MAX_DEPTH = "max_depth";
 	public static String CURRENT_DEPTH = "current_depth";
