@@ -54,6 +54,7 @@ public class GarbageBinLink {
 		} catch (UnirestException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
+			//e.printStackTrace();
 			System.out.printf("Failed to get an update for bin with ip: %s %n", destination);
 			return false;
 		}
