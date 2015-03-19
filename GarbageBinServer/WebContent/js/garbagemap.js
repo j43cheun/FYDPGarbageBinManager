@@ -25,16 +25,83 @@ function GarbageSpot( garbageSpotID, name, gmaps_marker, description, garbageClu
   this.garbageClusterID = garbageClusterID;
 }
 
+function ServiceStation( serviceStationID, name, gmaps_marker, description ) {
+  this.serviceStationID = serviceStationID;
+  this.name = name;
+  this.gmaps_marker = gmaps_marker;
+  this.description = description;
+}
+
 function GarbageCluster( garbageClusterID, gmaps_marker ) {
   this.garbageClusterID = garbageClusterID;
   this.gmaps_marker = gmaps_marker;
 }
 
+function GarbageBin( garbageBinID, gmaps_marker, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, IP, clusterID, gmaps_infoWindow ) {
+  this.garbageBinID = garbageBinID;
+  this.gmaps_marker = gmaps_marker;
+  this.garbageBinMaxVolume = garbageBinMaxVolume;
+  this.garbageBinCurrentVolume = garbageBinCurrentVolume;
+  this.garbageBinPercentFreeVolume = garbageBinPercentFreeVolume;
+  this.IP = IP;
+  this.clusterID = clusterID;
+  this.gmaps_infoWindow = gmaps_infoWindow;
+}
+
+GarbageBin.prototype.setClusterID = function( clusterID ) {
+  this.clusterID = clusterID;
+  
+  var gmaps_contentString = 
+    '<div id="content">' +
+    '<h5>Garbage Bin</h5>' +
+    '<table class="table">' +
+    '<tbody>' +
+    '<tr>' +
+    '<td>ID</td>' +
+    '<td>' + this.garbageBinID + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<tr>' +
+    '<td>IP Address</td>' +
+    '<td>' + this.IP + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Latitude, Longitude</td>' +
+    '<td>' + this.gmaps_marker.getPosition().toUrlValue() + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Container Volume</td>' +
+    '<td>' + this.garbageBinMaxVolume + ' L</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Garbage Volume</td>' +
+    '<td>' + this.garbageBinCurrentVolume + ' L</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Percent Remaining Space</td>' +
+    '<td>' + this.garbageBinPercentFreeVolume + '%</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Patrol Cluster</td>' +
+    '<td>' + this.clusterID + '</td>' +
+    '</tr>' +
+    '</tbody>' +
+    '</table>' +
+    '</div>';
+  
+  this.gmaps_infoWindow.setContent( gmaps_contentString );
+};
+
 // TODO: GarbageCluster
 
 var availableGarbageSpots = [];
+var availableGarbageBins = [];
+var availableGarbageClusters = [];
+
+var gmaps_serviceStationTable = {}
 var gmaps_garbageSpotTable = {}
 var gmaps_garbageClusterTable = {}
+var gmaps_garbageBinTable = {}
 
 function gmaps_initialize() {
   var gmaps_initialLatLng = new google.maps.LatLng( 43.4689, -80.5400 );
@@ -49,6 +116,50 @@ function gmaps_initialize() {
     var garbageCoordinatesInputElement = document.getElementById( "footerCoordinatesInput" );
     gmaps_identifyActiveMarker( event.latLng );
     garbageCoordinatesInputElement.value = event.latLng.toUrlValue();
+  } );
+  
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action: "getServiceStations" }, function( jsonDataResponseObject ) {
+    for( var key in jsonDataResponseObject ) {
+      var serviceStationJSONString = jsonDataResponseObject[key];
+      var serviceStationJSONObject = jQuery.parseJSON( serviceStationJSONString );
+      
+      var serviceStationID = serviceStationJSONObject.serviceStationID;
+      var name = serviceStationJSONObject.name;
+      var latitude = serviceStationJSONObject.latitude;
+      var longitude = serviceStationJSONObject.longitude;
+      var description = serviceStationJSONObject.description;
+      
+      var gmaps_latLng = gmaps_latLngFactory( latitude, longitude );
+      
+      if( gmaps_latLng != null ) {
+        loadServiceStation( serviceStationID, name, gmaps_latLng, description )
+      }
+    }
+  } );
+  
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action: "getGarbageBins" }, function( jsonDataResponseObject ) {
+    alert( JSON.stringify(jsonDataResponseObject) );
+    
+    for( var key in jsonDataResponseObject ) {
+      
+      var garbageBinJSONString = jsonDataResponseObject[key];
+      var garbageBinJSONObject = jQuery.parseJSON( garbageBinJSONString );
+      
+      var garbageBinID = garbageBinJSONObject.garbageBinID;
+      var garbageBinMaxVolume = garbageBinJSONObject.garbageBinMaxVolume;
+      var garbageBinCurrentVolume = garbageBinJSONObject.garbageBinCurrentVolume;
+      var garbageBinPercentFreeVolume = garbageBinJSONObject.garbageBinPercentFreeVolume;
+      
+      var latitude = garbageBinJSONObject.latitude;
+      var longitude = garbageBinJSONObject.longitude;
+      var gmaps_latLng = gmaps_latLngFactory( latitude, longitude );
+      
+      var IP = garbageBinJSONObject.IP;
+      
+      if( gmaps_latLng != null ) {
+        loadGarbageBin( garbageBinID, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, gmaps_latLng, IP );
+      }
+    }
   } );
   
   $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"getGarbageSpots" }, function( jsonDataResponseObject ) {
@@ -90,13 +201,17 @@ function gmaps_identifyActiveMarker( gmaps_latLng ) {
     gmaps_activeMarker.setMap( null );
   }
   
-  var gmaps_contentString = '<div id="content">' +
-    '<h6 id="activeMarkerHeading">Current Position</h6>' +
-    '<div id="bodyContent">' +
-    '<p>' +
-    gmaps_latLng.toUrlValue() +
-    '</p>' +
-    '</div>' +
+  var gmaps_contentString = 
+    '<div id="content">' +
+    '<h5>Current Position</h5>' +
+    '<table class="table">' +
+    '<tbody>' +
+    '<tr>' +
+    '<td>Latitude, Longitude</td>' +
+    '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
+    '</tr>' +
+    '</tbody>' +
+    '</table>' +
     '</div>';
 
   var gmaps_infoWindow = new google.maps.InfoWindow( {
@@ -203,45 +318,103 @@ function loadAddGarbageSpotModal( object, event ) {
 }
 
 function loadAllocateGarbageBinsModal( object, event ) {
+  
+  $( '#allocateGarbageBinsModal' ).modal( 'toggle' );
+  
+  
+  
+  return false;
+}
+
+function loadClusterGarbageSpotsModal( object, event ) {
   var alertString;
   var numGarbageSpots = Object.keys( gmaps_garbageSpotTable ).length;
   
   if( numGarbageSpots > 0 ) {
-    var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
-    var tdAllocationNumGarbageSpotsElement = document.getElementById( 'allocationNumGarbageSpots' );
-    var allocationOption1RadioBtn = $( '#allocationOption1' );
-    var allocationOption2RadioBtn = $( '#allocationOption2' );
+    var tdClusterNumGarbageBinsElement = document.getElementById( 'clusterNumGarbageBins' );
+    var tdClusterNumGarbageSpotsElement = document.getElementById( 'clusterNumGarbageSpots' );
+    var clusterOption1RadioBtn = $( '#clusterOption1RadioBtn' );
+    var clusterOption2RadioBtn = $( '#clusterOption2RadioBtn' );
 	
     // Set OPTION1 radio to TRUE; OPTION2 radio to FALSE.
-    allocationOption1RadioBtn.bootstrapSwitch( 'state', true );
-    allocationOption2RadioBtn.bootstrapSwitch( 'state', false );
+    clusterOption1RadioBtn.bootstrapSwitch( 'state', true );
+    clusterOption2RadioBtn.bootstrapSwitch( 'state', false );
     
     // Initialize statistics table to reflect statistics from OPTION1.
-    tdAllocationNumGarbageBinsElement.innerHTML = 'TODO';
-    tdAllocationNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
+    tdClusterNumGarbageBinsElement.innerHTML = 'TODO';
+    tdClusterNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
     
     // Set switch change event on OPTION1 radio. This event handles switch 
     // change for OPTION1 radio as well.
-    allocationOption1RadioBtn.on( 'switchChange.bootstrapSwitch', function( event, data ) {
-      if( allocationOption1RadioBtn.bootstrapSwitch( 'state' ) == true ) {
-        tdAllocationNumGarbageBinsElement.innerHTML = 'TODO';
-        tdAllocationNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
+    clusterOption1RadioBtn.on( 'switchChange.bootstrapSwitch', function( event, data ) {
+      if( clusterOption1RadioBtn.bootstrapSwitch( 'state' ) == true ) {
+        tdClusterNumGarbageBinsElement.innerHTML = 'TODO';
+        tdClusterNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
       }
       else {
-        tdAllocationNumGarbageBinsElement.innerHTML = 'TODO';
-        tdAllocationNumGarbageSpotsElement.innerHTML = Object.keys( gmaps_garbageSpotTable ).length;
+        tdClusterNumGarbageBinsElement.innerHTML = 'TODO';
+        tdClusterNumGarbageSpotsElement.innerHTML = Object.keys( gmaps_garbageSpotTable ).length;
       }
     } );
     
-    $( '#allocateGarbageBinsModal' ).modal( 'toggle' ); 
+    $( '#clusterGarbageSpotsModal' ).modal( 'toggle' ); 
   }
   else {
     alertString =
-      'There are no garbage spots available! At least x1 garbage spot is required to perform allocation!';
+      'There are no garbage spots available! At least x1 garbage spot is required to perform clustering!';
     alert( alertString );
   }
   
   return false;
+}
+
+function addServiceStation( object, event ) {
+  var addServiceStationNameInputElement = document.getElementById( 'addGarbageSpotNameInput' );
+  var addServiceStationCoordinatesInputElement = document.getElementById( 'addGarbageSpotCoordinatesInput' );
+  var addServiceStationDescriptionInputElement = document.getElementById( 'addGarbageSpotDescriptionInput' );
+  var name = addServiceStationNameInputElement.value;
+  var gmaps_latLng = gmaps_parseInputCoordinates( addServiceStationCoordinatesInputElement.value );
+  var description = addServiceStationDescriptionInputElement.value;
+  
+  if( name != "" && gmaps_latLng != null ) {
+    var jsonDataRequestObject = new Object();
+    
+    jsonDataRequestObject.name = name;
+    jsonDataRequestObject.latitude = gmaps_latLng.lat();
+    jsonDataRequestObject.longitude = gmaps_latLng.lng();
+    jsonDataRequestObject.description = description;
+    
+    var jsonDataRequestString = JSON.stringify( jsonDataRequestObject );
+    
+    $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"addServiceStation", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
+      var serviceStationID = jsonDataResponseObject.serviceStationID;
+      
+      if( serviceStationID != -1 ) {
+        if( gmaps_activeMarker != null ) {
+          var serviceStationCoordinatesInputElement = document.getElementById( 'footerCoordinatesInput' );
+          gmaps_activeMarker.setMap( null );
+          serviceStationCoordinatesInputElement.value = "";
+        }
+        
+        loadServiceStation( serviceStationID, name, gmaps_latLng, description );
+        $( '#addGarbageSpotModal' ).modal( 'toggle' );
+        
+        addServiceStationNameInputElement.value = "";
+        addServiceStationCoordinatesInputElement.value = "";
+        addServiceStationDescriptionInputElement.value = "";
+      }
+      else {
+        alertString = 
+          'Cannot add a service station that already exists!';
+        alert( alertString );
+      }
+    } );
+  }
+  else {
+    alertString = 
+      'Invalid name and/or latitude and longitude input!';
+    alert( alertString );
+  }
 }
 
 function addGarbageSpot( object, event ) {
@@ -297,6 +470,48 @@ function addGarbageSpot( object, event ) {
 }
 
 function allocateGarbageBins( object, event ) {
+  var initialTemperatureInput = document.getElementById( 'initialTemp' );
+  var finalTemperatureInput = document.getElementById( 'finalTemp' );
+  var coolingFactorInput = document.getElementById( 'coolingFactor' );
+  var nestedIterationsInput = document.getElementById( 'nestedIter' );
+  var maxIterationsInput = document.getElementById( 'maxIter' );
+  
+  var initialTemperature = parseFloat( initialTemperatureInput.value );
+  var finalTemperature = parseFloat( finalTemperatureInput.value );
+  var coolingFactor = parseFloat( coolingFactorInput.value );
+  var nestedIterations = parseInt( nestedIterationsInput.value, 10 );
+  var maxIterations = parseInt( maxIterationsInput.value, 10 );
+  
+  console.log( coolingFactor );
+  
+  // TODO Argument checking
+  
+  var jsonDataRequestObject = new Object();
+  jsonDataRequestObject.initialTemperature = initialTemperature;
+  jsonDataRequestObject.finalTemperature = finalTemperature;
+  jsonDataRequestObject.coolingFactor = coolingFactor;
+  jsonDataRequestObject.nestedIterations = nestedIterations;
+  jsonDataRequestObject.maxIterations = maxIterations;
+  
+  var jsonDataRequestString = JSON.stringify( jsonDataRequestObject );
+  
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"allocateGarbageBins", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
+    var mystr = JSON.stringify( jsonDataResponseObject );
+    alert( mystr );
+    for( var key in jsonDataResponseObject ) {
+      var garbageBin = gmaps_garbageBinTable[key];
+      var clusterID = jsonDataResponseObject[key];
+      console.log( clusterID );
+      garbageBin.setClusterID( clusterID );
+    }
+  } );
+  
+  $('#allocateGarbageBinsModal').modal( 'toggle' );
+  
+  return false;
+}
+
+function clusterGarbageBins( object, event ) {
   var alertString;
   
   var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
@@ -304,7 +519,6 @@ function allocateGarbageBins( object, event ) {
   
   var numGarbageClusters = document.getElementById( 'allocationNumClusters' ).value;
   var numClusterIterations = document.getElementById( 'allocationNumClusterIterations' ).value;
-  var numAssignmentIterations = document.getElementById( 'allocationNumAssignmentIterations' ).value;
   
   if( numGarbageClusters != parseInt( numGarbageClusters, 10 ) ) {
     alertString = 'The quantity of garbage clusters MUST be an integer!';
@@ -323,17 +537,6 @@ function allocateGarbageBins( object, event ) {
   }
   else if( numClusterIterations <= 0 ) {
     alertString = 'The quantity of cluster iterations MUST be greater than 0!';
-    alert( alertString );
-    return false;
-  }
-  
-  if( numAssignmentIterations != parseInt( numAssignmentIterations, 10 ) ) {
-    alertString = 'The quantity of assignment iterations MUST be an integer!';
-    alert( alertString );
-    return false;
-  }
-  else if( numAssignmentIterations <= 0 ) {
-    alertString = 'The quantity of assignment iterations MUST be greater than 0!';
     alert( alertString );
     return false;
   }
@@ -388,6 +591,12 @@ function allocateGarbageBins( object, event ) {
     // NO JSON DATA RESPONSE OBJECT RETURNED!
   } );
   
+  /*
+  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"allocateGarbageBins", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
+    // NO JSON DATA RESPONSE OBJECT RETURNED!
+  } );
+  */
+  
   $.getJSON( "/GarbageBinServer/garbagemapServlet", { action: "getGarbageClusters" }, function( jsonDataResponseObject ) {
     for( var key in jsonDataResponseObject ) {
       var garbageClusterJSONString = jsonDataResponseObject[key];
@@ -408,11 +617,52 @@ function allocateGarbageBins( object, event ) {
     availableGarbageSpots.pop();
   }
   
-  $( '#allocateGarbageBinsModal' ).modal( 'hide' );
+  $( '#clusterGarbageSpotsModal' ).modal( 'hide' );
   
   google.maps.event.trigger(gmaps_map, 'resize');
   
   return true;
+}
+
+function loadServiceStation( serviceStationID, name, gmaps_latLng, description ) {
+  var gmaps_marker = new google.maps.Marker( {
+    position: gmaps_latLng,
+    map: gmaps_map,
+    title: name,
+    animation: google.maps.Animation.DROP
+  } );
+  
+  var gmaps_contentString = 
+    '<div id="content">' +
+    '<h5>' + name + '</h5>' +
+    '<table class="table">' +
+    '<tbody>' +
+    '<tr>' +
+    '<td>ID</td>' +
+    '<td>' + serviceStationID + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Latitude, Longitude</td>' +
+    '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Description</td>' +
+    '<td>' + description + '</td>' +
+    '</tr>' +
+    '</tbody>' +
+    '</table>' +
+    '</div>';
+  
+  var gmaps_infoWindow = new google.maps.InfoWindow( {
+    content: gmaps_contentString
+  } );
+  
+  google.maps.event.addListener(gmaps_marker, 'click', function() {
+    gmaps_infoWindow.open( gmaps_map, gmaps_marker );
+  } );
+  
+  gmaps_marker.setIcon('../icons/home.png');
+  gmaps_garbageSpotTable[serviceStationID] = new ServiceStation( serviceStationID, name, gmaps_marker, description );
 }
 
 function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID ) {
@@ -425,12 +675,23 @@ function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbag
   
   var gmaps_contentString = 
     '<div id="content">' +
-    '<h6 id="activeMarkerHeading">' + name + '</h6>' +
-    '<div id="bodyContent">' +
-    '<p>' +
-    gmaps_latLng.toUrlValue() +
-    '</p>' +
-    '</div>' +
+    '<h5>' + name + '</h5>' +
+    '<table class="table">' +
+    '<tbody>' +
+    '<tr>' +
+    '<td>ID</td>' +
+    '<td>' + garbageSpotID + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Latitude, Longitude</td>' +
+    '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Description</td>' +
+    '<td>' + description + '</td>' +
+    '</tr>' +
+    '</tbody>' +
+    '</table>' +
     '</div>';
   
   var gmaps_infoWindow = new google.maps.InfoWindow( {
@@ -460,12 +721,18 @@ function loadGarbageCluster( garbageClusterID, gmaps_latLng ) {
   
   var gmaps_contentString = 
     '<div id="content">' +
-    '<h6 id="activeMarkerHeading"> Garbage Cluster ' + garbageClusterID + '</h6>' +
-    '<div id="bodyContent">' +
-    '<p>' +
-    gmaps_latLng.toUrlValue() +
-    '</p>' +
-    '</div>' +
+    '<h5>Garbage Cluster</h5>' +
+    '<table class="table">' +
+    '<tbody>' +
+    '<tr>' +
+    '<td>ID</td>' +
+    '<td>' + garbageClusterID + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Latitude, Longitude</td>' +
+    '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
+    '</tbody>' +
+    '</table>' +
     '</div>';
   
   var gmaps_infoWindow = new google.maps.InfoWindow( {
@@ -478,6 +745,66 @@ function loadGarbageCluster( garbageClusterID, gmaps_latLng ) {
   
   gmaps_marker.setIcon('../icons/azure_flag.png');
   gmaps_garbageClusterTable[garbageClusterID] = new GarbageCluster( garbageClusterID, gmaps_marker );
+}
+
+function loadGarbageBin( garbageBinID, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, gmaps_latLng, IP, clusterID ) {
+  var garbageBinTitle = 'Garbage Bin ' + garbageBinID;
+  var gmaps_marker = new google.maps.Marker( {
+    position: gmaps_latLng,
+    map: gmaps_map,
+    title: garbageBinTitle,
+    animation: google.maps.Animation.DROP
+  } );
+  
+  var gmaps_contentString = 
+    '<div id="content">' +
+    '<h5>Garbage Bin</h5>' +
+    '<table class="table">' +
+    '<tbody>' +
+    '<tr>' +
+    '<td>ID</td>' +
+    '<td>' + garbageBinID + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<tr>' +
+    '<td>IP Address</td>' +
+    '<td>' + IP + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Latitude, Longitude</td>' +
+    '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Container Volume</td>' +
+    '<td>' + garbageBinMaxVolume + ' L</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Garbage Volume</td>' +
+    '<td>' + garbageBinCurrentVolume + ' L</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Percent Remaining Space</td>' +
+    '<td>' + garbageBinPercentFreeVolume + '%</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td>Patrol Cluster</td>' +
+    '<td>' + 'None' + '</td>' +
+    '</tr>' +
+    '</tbody>' +
+    '</table>' +
+    '</div>';
+  
+  var gmaps_infoWindow = new google.maps.InfoWindow( {
+    content: gmaps_contentString,
+    maxWidth: 500
+  } );
+  
+  google.maps.event.addListener( gmaps_marker, 'click', function() {
+    gmaps_infoWindow.open( gmaps_map, gmaps_marker );
+  } );
+  
+  gmaps_marker.setIcon( '../icons/garbage_bin.png' );
+  gmaps_garbageBinTable[garbageBinID] = new GarbageBin( garbageBinID, gmaps_marker, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, IP, clusterID, gmaps_infoWindow );
 }
 
 google.maps.event.addDomListener( window, 'load', gmaps_initialize );
