@@ -66,12 +66,12 @@
               <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
               Add
             </button>
-            <button type="submit" class="btn btn-warning" onclick="return loadAddGarbageSpotModal( this, event )">
-              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-              Remove
+            <button type="submit" class="btn btn-warning" onclick="return loadClusterGarbageSpotsModal( this, event );">
+              <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+              Cluster
             </button>
             <button type="submit" class="btn btn-danger" onclick="return loadAllocateGarbageBinsModal( this, event );">
-              <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
               Allocate
             </button>
           </div>
@@ -84,15 +84,15 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title">Add Garbage SPOT</h4>
+          <h4 class="modal-title">Add</h4>
         </div>
         <div class="modal-body">
-          <p>Add the following entry to GARBAGE SPOTS?</p>
+          <p>Add the following entry?</p>
           <div class="input-group" style="padding-bottom: 15px">
             <span class="input-group-addon">
               <span class="glyphicon glyphicon-font" aria-hidden="true"></span>
             </span>
-            <input id="addGarbageSpotNameInput" type="text" class="form-control" name="addGarbageSpotNameInput" placeholder="Garbage SPOT Name">
+            <input id="addGarbageSpotNameInput" type="text" class="form-control" name="addGarbageSpotNameInput" placeholder="Name">
           </div>
           <div class="input-group" style="padding-bottom: 15px">
             <span class="input-group-addon">
@@ -109,9 +109,13 @@
           <textarea id="addGarbageSpotDescriptionInput" class="form-control" name="addGarbageSpotDescriptionInput" rows="3" placeholder="Description"></textarea>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-info" onclick="return addServiceStation( this, event )">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Service Station
+          </button>
           <button type="button" class="btn btn-success" onclick="return addGarbageSpot( this, event )">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add Garbage SPOT
+            Garbage SPOT
           </button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
         </div>
@@ -123,35 +127,10 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title">Allocate Garbage Bins</h4>
+          <h4 class="modal-title">Allocate Garbage BINS</h4>
         </div>
         <div class="modal-body">
-          <p>
-            Select an option for garbage bin allocation:
-          </p>
           <form role="form">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Options</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-              <tr>
-                <td>Allocate unassigned garbage bins to available garbage spots</td>
-                <td>
-                  <input id="allocationOption1" type="radio" name="allocationOptions" class="bootstrap-switch" data-size="small" data-on-color="danger">
-                </td>
-              </tr>
-              <tr>
-                <td>Allocate all garbage bins to all garbage spots</td>
-                <td>
-                  <input id="allocationOption2" type="radio" name="allocationOptions" class="bootstrap-switch" data-size="small" data-on-color="danger">
-                </td>
-              </tr>
-            </tbody>
-            </table>
             <table class="table">
               <thead>
                 <tr>
@@ -167,6 +146,112 @@
                 <tr>   
                   <td>Garbage Spots</td>
                   <td id="allocationNumGarbageSpots" class="text-right">144</td>
+                </tr>
+                <tr>   
+                  <td>Service Stations</td>
+                  <td id="allocationNumServiceStations" class="text-right">144</td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Specify a positive real number as the initial temperature.</p>
+            <div class="input-group" style="padding-bottom: 15px">
+              <div class="input-group-addon">Initial Temperature</div>
+              <input type="number" class="form-control" id="initialTemp" value="100.01">
+            </div>
+            <p>
+              Specify a positive real number as the final temperature. The 
+              final temperature MUST be less than the initial temperature.
+            </p>
+            <div class="input-group" style="padding-bottom: 15px">
+              <div class="input-group-addon">Final Temperature</div>
+              <input type="number" class="form-control" id="finalTemp" value="1.01">
+            </div>
+            <p>
+              Specify a positive real number between 0 and 1 exclusive as the cooling factor.
+            </p>
+            <div class="input-group" style="padding-bottom: 15px">
+              <div class="input-group-addon">Cooling Factor</div>
+              <input type="number" class="form-control" id="coolingFactor" value="0.1">
+            </div>
+            <p>
+              Specify a positive integer for the number of nested iterations.
+            </p>
+            <div class="input-group" style="padding-bottom: 15px">
+              <div class="input-group-addon">Nested Iterations</div>
+              <input type="number" class="form-control" id="nestedIter" value="1">
+            </div>
+            <p>
+              Specify a positive integer for the max number of iterations.
+            </p>
+            <div class="input-group" style="padding-bottom: 15px">
+              <div class="input-group-addon">Max Iterations</div>
+              <input type="number" class="form-control" id="maxIter" value="300">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" onclick="return allocateGarbageBins( this, event )">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+            Allocate Garbage Bins
+          </button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="clusterGarbageSpotsModal" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Allocate Garbage Bins</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+            Select an option for garbage spots clustering:
+          </p>
+          <form role="form">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Options</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td>Only perform clustering on unclustered garbage spots</td>
+                <td>
+                  <input id="clusterOption1RadioBtn" type="radio" name="allocationOptions" class="bootstrap-switch" data-size="small" data-on-color="warning">
+                </td>
+              </tr>
+              <tr>
+                <td>Perform clustering on all garbage spots</td>
+                <td>
+                  <input id="clusterOption2RadioBtn" type="radio" name="allocationOptions" class="bootstrap-switch" data-size="small" data-on-color="warning">
+                </td>
+              </tr>
+            </tbody>
+            </table>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Statistics</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Garbage Bins</td>
+                  <td id="clusterNumGarbageBins" class="text-right">1</td>
+                </tr>
+                <tr>   
+                  <td>Garbage Spots</td>
+                  <td id="clusterNumGarbageSpots" class="text-right">144</td>
+                </tr>
+                <tr>   
+                  <td>Service Stations</td>
+                  <td id="clusterNumServiceStations" class="text-right">144</td>
                 </tr>
               </tbody>
             </table>
@@ -186,24 +271,17 @@
               <div class="input-group-addon">Cluster Iterations</div>
               <input type="number" class="form-control" id="allocationNumClusterIterations" value="1">
             </div>
-            <p>
-              Specify the quantity of iterations to be performed by the 
-              assignment algorithm. This value MUST be greater than 0.
-            </p>
-            <div class="input-group">
-              <div class="input-group-addon">Assignment Iterations</div>
-              <input type="number" class="form-control" id="allocationNumAssignmentIterations" value="1">
-            </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" onclick="return allocateGarbageBins( this, event )">
+          <button type="button" class="btn btn-warning" onclick="return clusterGarbageBins( this, event )">
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-            Allocate Garbage Bins
+            Cluster Garbage Spots
           </button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
         </div>
       </div>
+    </div>
     </div>
     <div id="allocateGarbageBinsProgressModal" class="modal fade">
       <div class="modal-dialog">
