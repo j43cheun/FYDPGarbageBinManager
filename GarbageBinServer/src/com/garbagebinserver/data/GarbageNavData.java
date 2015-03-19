@@ -60,6 +60,7 @@ public class GarbageNavData {
 	ResultSet results; 
 	//Create a new SQL test statement
 	String constructing = "SELECT * FROM `garbagespot` WHERE 1";
+	String constructing2 = "SELECT * FROM `servicestation` WHERE 1";
 	JSONObject finalObject = new JSONObject();
 
 	try {
@@ -71,20 +72,26 @@ public class GarbageNavData {
 		}
 		
 		//Set up the connection to the database on port 3306 (default)
-		//To database robot1
+		//To database trash
 		//With username root and password fydp
 		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
 
 		//Perform a query
 		statement = conn.createStatement();
 		results = statement.executeQuery(constructing);
-		JSONArray allSpots = new JSONArray();
 		while (results.next()) {
 		    GarbageSpot spot = new GarbageSpot(results.getInt("id"), results.getString("name"), 
 		    		results.getDouble("latitude"), results.getDouble("longitude"), results.getString("description"));
 		    m_garbageSpotTable.put(results.getInt("id"), spot);	
 		}
-		finalObject.put("allSpots", allSpots);
+		
+		results = statement.executeQuery(constructing2);
+		
+		while (results.next()) {
+			ServiceStation spot = new ServiceStation(results.getInt("id"), results.getString("name"), 
+		    		results.getDouble("latitude"), results.getDouble("longitude"), results.getString("description"));
+			m_serviceStations.add(spot);	
+		}
 		
 	} catch (SQLException e) {
 		e.printStackTrace();
@@ -103,6 +110,36 @@ public class GarbageNavData {
     int serviceStationID = m_nextServiceStationID++;
     ServiceStation serviceStation = new ServiceStation( serviceStationID, name, latitude, longitude, description );
     m_serviceStations.add( serviceStation );
+    
+    
+    //Doing DB stuff here
+    Connection conn = null;
+    //Create a new SQL test statement
+    String constructing = "INSERT INTO `servicestation`(`name`, `description`, `latitude`, `longitude`) "
+            + "VALUES (?,?,?,?)";
+    
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        try {
+            //Set up the connection to the database on port 3306 (default)
+            //With username root and password fydp
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+
+            //Perform a query
+            PreparedStatement preparedStatement = conn.prepareStatement(constructing);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, description);
+            preparedStatement.setDouble(3, latitude);
+            preparedStatement.setDouble(4, longitude);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    } catch (ClassNotFoundException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+    }
+    
     return serviceStationID;
   }
   
