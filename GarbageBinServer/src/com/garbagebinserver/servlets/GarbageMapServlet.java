@@ -293,8 +293,8 @@ public class GarbageMapServlet extends HttpServlet {
 	    Double garbageBinCurrentDepth = garbageBinStatus.getCurrent_depth();
 	    Double garbageBinMaxDepth = garbageBinStatus.getMax_depth();
 	    Double garbageBinMaxVolume = garbageBinStatus.getVolume();
-	    Double garbageBinCurrentVolume = garbageBinCurrentDepth * garbageBinMaxVolume / garbageBinMaxDepth;
-	    Double garbageBinPercentFreeVolume = ( garbageBinMaxDepth - garbageBinCurrentDepth ) * 100 / garbageBinMaxDepth;
+	    Double garbageBinCurrentVolume = ( garbageBinMaxDepth - garbageBinCurrentDepth ) * garbageBinMaxVolume / garbageBinMaxDepth;
+	    Double garbageBinPercentFreeVolume = garbageBinCurrentDepth * 100 / garbageBinMaxDepth;
 	    
 	    GPSCoordinates garbageBinLocation = garbageBinStatus.getCoordinate();
 	    
@@ -304,6 +304,10 @@ public class GarbageMapServlet extends HttpServlet {
 	    garbageBinJSONObject.put( "garbageBinMaxVolume", garbageBinMaxVolume );
 	    garbageBinJSONObject.put( "garbageBinCurrentVolume", garbageBinCurrentVolume );
 	    garbageBinJSONObject.put( "garbageBinPercentFreeVolume", garbageBinPercentFreeVolume );
+	    
+	    garbageBinJSONObject.put( "maxDepth", garbageBinMaxDepth );
+	    garbageBinJSONObject.put( "currentDepth", garbageBinCurrentDepth );
+	    
 	    garbageBinJSONObject.put( "latitude", garbageBinLocation.getLatitude() );
 	    garbageBinJSONObject.put( "longitude", garbageBinLocation.getLongitude() );
 	    garbageBinJSONObject.put( "IP", garbageBinIP );

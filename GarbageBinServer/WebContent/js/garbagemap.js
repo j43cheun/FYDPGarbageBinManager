@@ -83,7 +83,11 @@ GarbageBin.prototype.setClusterID = function( clusterID ) {
     '</tr>' +
     '<tr>' +
     '<td>Patrol Cluster</td>' +
-    '<td>' + this.clusterID + '</td>' +
+    '<td>' + 
+    '<button type="submit" class="btn btn-primary">' + 
+    this.clusterID +
+    '</button>' +
+    '</td>' +
     '</tr>' +
     '</tbody>' +
     '</table>' +
