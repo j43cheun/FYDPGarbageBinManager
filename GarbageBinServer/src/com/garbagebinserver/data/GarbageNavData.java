@@ -151,37 +151,55 @@ public class GarbageNavData {
     // Will need Evgeny's help with this!
     // Also need to check boundaries!
     
-    int garbageSpotID = m_nextGarbageSpotID;
+    int garbageSpotID = -1;
+    //Going to initialize garbage bins for Justin here
+    Connection conn = null;
+	Statement statement = null;
+	ResultSet results; 
+	//Create a new SQL test statement
+	String constructing1 = "SELECT COUNT(id) AS total FROM `garbagespot`";
+
+	try {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+
+		//Perform a query
+		statement = conn.createStatement();
+		results = statement.executeQuery(constructing1);
+		results.next();
+		garbageSpotID = results.getInt("total") + 1;
+		
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}
+	
     GarbageSpot garbageSpot = new GarbageSpot( garbageSpotID, name, latitude, longitude, description );
     m_garbageSpotTable.put( garbageSpotID, garbageSpot );
     m_availableGarbageSpotsByID.add( garbageSpotID );
-    
-    // TEMP
-    m_nextGarbageSpotID++;
-    
-    //Doing DB stuff here
-    Connection conn = null;
-    //Create a new SQL test statement
-    String constructing = "INSERT INTO `garbagespot`(`name`, `description`, `latitude`, `longitude`) "
-            + "VALUES (?,?,?,?)";
+	
+    String constructing = "INSERT INTO `garbagespot`(`id`, `name`, `description`, `latitude`, `longitude`) "
+            + "VALUES (?,?,?,?,?)";
     
     try {
         Class.forName("com.mysql.jdbc.Driver");
         try {
-            //Set up the connection to the database on port 3306 (default)
-            //With username root and password fydp
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
 
             //Perform a query
             PreparedStatement preparedStatement = conn.prepareStatement(constructing);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, description);
-            preparedStatement.setDouble(3, latitude);
-            preparedStatement.setDouble(4, longitude);
+            preparedStatement.setInt(1, garbageSpotID);
+            preparedStatement.setString(2, name);
+            preparedStatement.setString(3, description);
+            preparedStatement.setDouble(4, latitude);
+            preparedStatement.setDouble(5, longitude);
             preparedStatement.executeUpdate();
             
-            //If succesful, increment counter
-            m_nextGarbageSpotID++;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -189,6 +207,7 @@ public class GarbageNavData {
         // TODO Auto-generated catch block
         e1.printStackTrace();
     }
+   
     return garbageSpotID;
   }
   
