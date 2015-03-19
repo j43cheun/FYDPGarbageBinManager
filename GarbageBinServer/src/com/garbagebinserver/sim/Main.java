@@ -19,6 +19,7 @@ import com.garbagebinserver.clusteranalysis.KMeansCluster;
 import com.garbagebinserver.data.GarbageBin;
 import com.garbagebinserver.data.GarbageClusterData;
 import com.garbagebinserver.data.GarbageSpot;
+import com.garbagebinserver.data.ServiceStation;
 
 public class Main {
 
@@ -33,7 +34,7 @@ public class Main {
     int garbageBinID = 1;
     int garbageSpotID = 1;
     
-    ArrayList<GPSCoordinates> serviceStations = new ArrayList<GPSCoordinates>();
+    ArrayList<ServiceStation> serviceStations = new ArrayList<ServiceStation>();
     LinkedHashSet<GarbageBin> garbageBins = new LinkedHashSet<GarbageBin>();
     LinkedHashSet<Coordinates> garbageSpots = new LinkedHashSet<Coordinates>();
     
@@ -54,7 +55,7 @@ public class Main {
           double latitude = Double.parseDouble( attribute[1] );
           double longitude = Double.parseDouble( attribute[2] );
           
-          GPSCoordinates serviceStation = new GPSCoordinates( latitude, longitude );
+          ServiceStation serviceStation = new ServiceStation( 0, "x", latitude, longitude, "" );
           
           serviceStations.add( serviceStation );
         }

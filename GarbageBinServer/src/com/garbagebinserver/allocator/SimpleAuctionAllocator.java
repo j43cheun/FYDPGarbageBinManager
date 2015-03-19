@@ -11,18 +11,19 @@ import com.garbagebinserver.clusteranalysis.Coordinates;
 import com.garbagebinserver.clusteranalysis.GPSCoordinates;
 import com.garbagebinserver.data.GarbageBin;
 import com.garbagebinserver.data.GarbageClusterData;
+import com.garbagebinserver.data.ServiceStation;
 
 public class SimpleAuctionAllocator
 {
   private ArrayList<GarbageBin>                             m_garbageBins;
   private ArrayList<GarbageClusterData>                     m_garbageClusterDataElements;
-  private LinkedHashMap<GarbageClusterData, GPSCoordinates> m_nearestServiceStationTable;
+  private LinkedHashMap<GarbageClusterData, ServiceStation> m_nearestServiceStationTable;
   private int[]                                             m_garbageBinAllocation;
   private Random                                            m_randomNumberGenerator;
   
   public SimpleAuctionAllocator( final ArrayList<GarbageBin> garbageBins,
                                  final ArrayList<GarbageClusterData> garbageClusterDataElements,
-                                 final ArrayList<GPSCoordinates> serviceStations )
+                                 final ArrayList<ServiceStation> serviceStations )
   {
     if( garbageBins == null ) {
       throw new IllegalArgumentException( "The set of garbage bins cannot be null!" );
@@ -56,14 +57,14 @@ public class SimpleAuctionAllocator
     m_garbageClusterDataElements = garbageClusterDataElements;
     
     // Map each garbage cluster data element to the nearest service station.
-    m_nearestServiceStationTable = new LinkedHashMap<GarbageClusterData, GPSCoordinates>();
+    m_nearestServiceStationTable = new LinkedHashMap<GarbageClusterData, ServiceStation>();
     
     for( GarbageClusterData garbageClusterDataElement : m_garbageClusterDataElements )
     {
-      GPSCoordinates closestServiceStation = null;
+      ServiceStation closestServiceStation = null;
       double closestDistance = -1;
       
-      for( GPSCoordinates serviceStation : serviceStations )
+      for( ServiceStation serviceStation : serviceStations )
       {
         double distance = garbageClusterDataElement.getGarbageCluster().getCentroid().getDistance( serviceStation );
         

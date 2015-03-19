@@ -4,6 +4,7 @@ import com.garbagebinserver.clusteranalysis.GPSCoordinates;
 
 public class GarbageBin {
   
+  private String         m_garbageBinName;
   private int            m_garbageBinID;
   private double         m_currentGarbageVolume;
   private double         m_maxGarbageVolume;
@@ -25,11 +26,20 @@ public class GarbageBin {
       throw new IllegalArgumentException( "The garbage bin IP address cannot be null!" );
     }
     
+    m_garbageBinName = "Unnamed Garbage Bin";
     m_garbageBinID = garbageBinID;
     m_currentGarbageVolume = 0;
     m_maxGarbageVolume = maxGarbageVolume;
     m_currentGPSCoordinate = currentGPSCoordinate;
     m_garbageBinIPAddress = garbageBinIPAddress;
+  }
+  
+  public String getGarbageBinName() {
+    return m_garbageBinName;
+  }
+  
+  public void setGarbageBinName( final String garbageBinName ) {
+    m_garbageBinName = garbageBinName;
   }
   
   public int getGarbageBinID() {

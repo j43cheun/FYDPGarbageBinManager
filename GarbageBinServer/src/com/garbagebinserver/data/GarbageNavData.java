@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
@@ -13,24 +14,47 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.garbagebinserver.clusteranalysis.Coordinates;
+import com.garbagebinserver.clusteranalysis.GPSCoordinates;
 import com.garbagebinserver.clusteranalysis.KMeansCluster;
 
 public class GarbageNavData {
   
   private static GarbageNavData m_instance = null;
   
+  // TODO Have server and database provide these IDs.
   private int m_nextGarbageSpotID;
+  private int m_nextServiceStationID;
+  
+  // Temporarily keeps track of garbage clusters. Do not place in database.
   private int m_nextGarbageClusterID;
+  
+  // Keeps track of garbage spots and garbage clusteres.
   private LinkedHashMap<Integer, GarbageSpot> m_garbageSpotTable;
   private LinkedHashMap<Integer, KMeansCluster> m_kmeansClusterTable;
+  
+  // Used to keep track of garbage bin allocation.
+  private LinkedHashMap<Integer, Integer> m_allocationTable;
+  
+  // Used to keep track of available gb spots, clusters, and garbage bins.
+  private LinkedHashSet<Integer> m_availableClustersByID;
   private LinkedHashSet<Integer> m_availableGarbageSpotsByID;
   
-  public GarbageNavData() {
+  // Used to keep track of service stations.
+  private LinkedHashSet<ServiceStation> m_serviceStations;
+  
+  private GarbageNavData() {
     m_nextGarbageSpotID = 1;
     m_nextGarbageClusterID = 1;
+    m_nextServiceStationID = 1;
     m_garbageSpotTable = new LinkedHashMap<Integer, GarbageSpot>();
     m_kmeansClusterTable = new LinkedHashMap<Integer, KMeansCluster>();
     m_availableGarbageSpotsByID = new LinkedHashSet<Integer>();
+    m_serviceStations = new LinkedHashSet<ServiceStation>();
+    m_availableClustersByID = new LinkedHashSet<Integer>();
+    
+    m_allocationTable = new LinkedHashMap<Integer, Integer>();
+    
+    // EUGENE's CODE. DO NOT DELETE!
     /*
     // Initialize garbage spot list.
     Connection conn = null;
@@ -79,6 +103,13 @@ public class GarbageNavData {
     }
     
     return m_instance;
+  }
+  
+  public int addServiceStation( final String name, final double latitude, final double longitude, final String description ) {
+    int serviceStationID = m_nextServiceStationID++;
+    ServiceStation serviceStation = new ServiceStation( serviceStationID, name, latitude, longitude, description );
+    m_serviceStations.add( serviceStation );
+    return serviceStationID;
   }
   
   public int addGarbageSpot( final String name, final double latitude, final double longitude, final String description ) {
@@ -159,8 +190,8 @@ public class GarbageNavData {
     for( KMeansCluster kmeansCluster : garbageClusters ) {
       m_kmeansClusterTable.put( kmeansCluster.getClusterID() , kmeansCluster );
       
-      for( Coordinates coordinate : kmeansCluster.getClusterPoints() ) {
-        GarbageSpot garbageSpot = ( GarbageSpot )coordinate;
+      for( Coordinates coordinates : kmeansCluster.getClusterPoints() ) {
+        GarbageSpot garbageSpot = ( GarbageSpot ) coordinates;
         m_availableGarbageSpotsByID.remove( garbageSpot.getGarbageSpotID() );
       }
     }
@@ -168,10 +199,26 @@ public class GarbageNavData {
   
   public void setGarbageClusters( final LinkedHashSet<KMeansCluster> garbageClusters ) {
     m_kmeansClusterTable.clear();
+    m_availableClustersByID.clear();
+    m_availableGarbageSpotsByID.clear();
     
     for( KMeansCluster kmeansCluster : garbageClusters ) {
       m_kmeansClusterTable.put( kmeansCluster.getClusterID() , kmeansCluster );
+      m_availableClustersByID.add( kmeansCluster.getClusterID() );
+      
+      for( Coordinates coordinates : kmeansCluster.getClusterPoints() ) {
+        GarbageSpot gbSpot = ( GarbageSpot ) coordinates;
+        m_availableGarbageSpotsByID.remove( gbSpot.getGarbageSpotID() );
+      }
     }
+  }
+  
+  public void addServiceStation( final ServiceStation serviceStation ) {
+    m_serviceStations.add( serviceStation );
+  }
+  
+  public LinkedHashSet<ServiceStation> getServiceStations() {
+    return m_serviceStations;
   }
   
   public int getNextGarbageClusterID() {
@@ -184,5 +231,45 @@ public class GarbageNavData {
   
   public void resetGarbageClusterID() {
     m_nextGarbageClusterID = 1;
+  }
+  
+  public boolean isGarbageBinAvailable( int garbageBinID ) {
+    return m_allocationTable.get( garbageBinID ) == null;
+  }
+  
+  public void clearGarbageBinAssignmentTable() {
+    m_allocationTable.clear();
+  }
+  
+  public void addAllocation( int garbageBinID, int clusterID ) {
+    m_allocationTable.put( garbageBinID , clusterID );
+  }
+  
+  public ArrayList<KMeansCluster> getAvailableClusters() {
+    ArrayList<KMeansCluster> clusters = new ArrayList<KMeansCluster>();
+    
+    for( int clusterID : m_kmeansClusterTable.keySet() ) {
+      if( m_availableClustersByID.contains( clusterID ) ) {
+        clusters.add( m_kmeansClusterTable.get( clusterID ) );
+      }
+    }
+    
+    return clusters;
+  }
+  
+  public void removeAvailableCluster( int clusterID ) {
+    m_availableClustersByID.remove( clusterID );
+  }
+  
+  public void makeClusterAvailable( int clusterID ) {
+    m_availableClustersByID.add( clusterID );
+  }
+  
+  public void makeClusterUnavailable( int clusterID ) {
+    m_availableClustersByID.remove( clusterID );
+  }
+  
+  public boolean isClusterAvailable( int clusterID ) {
+    return m_availableClustersByID.contains( clusterID );
   }
 }

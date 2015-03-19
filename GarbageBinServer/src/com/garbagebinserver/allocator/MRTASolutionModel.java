@@ -11,18 +11,19 @@ import com.garbagebinserver.clusteranalysis.Coordinates;
 import com.garbagebinserver.clusteranalysis.GPSCoordinates;
 import com.garbagebinserver.data.GarbageBin;
 import com.garbagebinserver.data.GarbageClusterData;
+import com.garbagebinserver.data.ServiceStation;
 
 public class MRTASolutionModel implements SolutionModel
 {
   private ArrayList<GarbageBin>                             m_garbageBins;
   private ArrayList<GarbageClusterData>                     m_garbageClusterDataElements;
-  private LinkedHashMap<GarbageClusterData, GPSCoordinates> m_nearestServiceStationTable;
+  private LinkedHashMap<GarbageClusterData, ServiceStation> m_nearestServiceStationTable;
   private int[]                                             m_garbageBinAllocation;
   private Random                                            m_randomNumberGenerator;
   
   public MRTASolutionModel( final ArrayList<GarbageBin> garbageBins,
                             final ArrayList<GarbageClusterData> garbageClusterDataElements,
-                            final ArrayList<GPSCoordinates> serviceStations )
+                            final ArrayList<ServiceStation> serviceStations )
   {
     if( garbageBins == null ) {
       throw new IllegalArgumentException( "The set of garbage bins cannot be null!" );
@@ -56,14 +57,14 @@ public class MRTASolutionModel implements SolutionModel
     m_garbageClusterDataElements = garbageClusterDataElements;
     
     // Map each garbage cluster data element to the nearest service station.
-    m_nearestServiceStationTable = new LinkedHashMap<GarbageClusterData, GPSCoordinates>();
+    m_nearestServiceStationTable = new LinkedHashMap<GarbageClusterData, ServiceStation>();
     
     for( GarbageClusterData garbageClusterDataElement : m_garbageClusterDataElements )
     {
-      GPSCoordinates closestServiceStation = null;
+      ServiceStation closestServiceStation = null;
       double closestDistance = -1;
       
-      for( GPSCoordinates serviceStation : serviceStations )
+      for( ServiceStation serviceStation : serviceStations )
       {
         double distance = garbageClusterDataElement.getGarbageCluster().getCentroid().getDistance( serviceStation );
         
@@ -103,7 +104,7 @@ public class MRTASolutionModel implements SolutionModel
   
   private MRTASolutionModel( final ArrayList<GarbageBin> garbageBins,
                              final ArrayList<GarbageClusterData> garbageClusterDataElements,
-                             final LinkedHashMap<GarbageClusterData, GPSCoordinates> nearestServiceStationTable,
+                             final LinkedHashMap<GarbageClusterData, ServiceStation> nearestServiceStationTable,
                              final int[] garbageBinAllocation )
   {
     // Initialize random number generator.
@@ -147,7 +148,17 @@ public class MRTASolutionModel implements SolutionModel
         
         // Compute overload cost.
         final double remainingVolume = garbageBin.getMaxGarbageVolume() - garbageBin.getCurrentGarbageVolume();
-        final PoissonDistribution poissonDistribution = new PoissonDistribution( garbageClusterDataElement.getAvgGarbageVolume() );
+        
+        // This block is necessary because the Poisson Distribution only accepts positive arguments!
+        double avgGarbageVolume;
+        if( garbageClusterDataElement.getAvgGarbageVolume() <= 0 ) {
+          avgGarbageVolume = 0.000001;
+        }
+        else {
+          avgGarbageVolume = garbageClusterDataElement.getAvgGarbageVolume();
+        }
+        
+        final PoissonDistribution poissonDistribution = new PoissonDistribution( avgGarbageVolume );
         final double underloadProb = poissonDistribution.cumulativeProbability( ( int ) Math.floor( remainingVolume  ) );
         
         totalOverload += 100 * ( 1 - underloadProb );
@@ -192,19 +203,21 @@ public class MRTASolutionModel implements SolutionModel
       neighborGarbageBinAllocation[idx] = m_garbageBinAllocation[idx];
     }
     
-    // Generate two indices to swap.
-    int swapIndexA = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    int swapIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    
-    while( swapIndexB == swapIndexA )
-    {
-      swapIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+    if( m_garbageBinAllocation.length > 1 ) {
+      // Generate two indices to swap.
+      int swapIndexA = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      int swapIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      
+      while( swapIndexB == swapIndexA )
+      {
+        swapIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      }
+      
+      // Swap at two indices.
+      int temp = neighborGarbageBinAllocation[swapIndexA];
+      neighborGarbageBinAllocation[swapIndexA] = neighborGarbageBinAllocation[swapIndexB];
+      neighborGarbageBinAllocation[swapIndexB] = temp;
     }
-    
-    // Swap at two indices.
-    int temp = neighborGarbageBinAllocation[swapIndexA];
-    neighborGarbageBinAllocation[swapIndexA] = neighborGarbageBinAllocation[swapIndexB];
-    neighborGarbageBinAllocation[swapIndexB] = temp;
     
     return new MRTASolutionModel( m_garbageBins, m_garbageClusterDataElements, m_nearestServiceStationTable, neighborGarbageBinAllocation );
   }
@@ -219,34 +232,36 @@ public class MRTASolutionModel implements SolutionModel
       neighborGarbageBinAllocation[idx] = m_garbageBinAllocation[idx];
     }
     
-    // Generate two indices to delete and insert.
-    int deleteIndex = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    int insertIndex = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    
-    while( insertIndex == deleteIndex )
-    {
-      insertIndex = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    }
-    
-    // Delete and insert at two indices.
-    int deletedClusterIdx = neighborGarbageBinAllocation[deleteIndex];
-    
-    if( deleteIndex < insertIndex )
-    {
-      for( int idx = deleteIndex; idx < insertIndex; idx++ )
+    if( m_garbageBinAllocation.length > 1 ) {
+      // Generate two indices to delete and insert.
+      int deleteIndex = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      int insertIndex = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      
+      while( insertIndex == deleteIndex )
       {
-        neighborGarbageBinAllocation[idx] = neighborGarbageBinAllocation[idx + 1];
+        insertIndex = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
       }
-    }
-    else if( deleteIndex > insertIndex )
-    {
-      for( int idx = deleteIndex; idx > insertIndex; idx-- )
+      
+      // Delete and insert at two indices.
+      int deletedClusterIdx = neighborGarbageBinAllocation[deleteIndex];
+      
+      if( deleteIndex < insertIndex )
       {
-        neighborGarbageBinAllocation[idx] = neighborGarbageBinAllocation[idx - 1];
+        for( int idx = deleteIndex; idx < insertIndex; idx++ )
+        {
+          neighborGarbageBinAllocation[idx] = neighborGarbageBinAllocation[idx + 1];
+        }
       }
+      else if( deleteIndex > insertIndex )
+      {
+        for( int idx = deleteIndex; idx > insertIndex; idx-- )
+        {
+          neighborGarbageBinAllocation[idx] = neighborGarbageBinAllocation[idx - 1];
+        }
+      }
+      
+      neighborGarbageBinAllocation[insertIndex] = deletedClusterIdx;
     }
-    
-    neighborGarbageBinAllocation[insertIndex] = deletedClusterIdx;
     
     return new MRTASolutionModel( m_garbageBins, m_garbageClusterDataElements, m_nearestServiceStationTable, neighborGarbageBinAllocation );
   }
@@ -261,37 +276,39 @@ public class MRTASolutionModel implements SolutionModel
       neighborGarbageBinAllocation[idx] = m_garbageBinAllocation[idx];
     }
     
-    // Generate two indices to invert.
-    int invertIndexA = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    int invertIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    
-    while( invertIndexB == invertIndexA )
-    {
-      invertIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    }
-    
-    // Invert at two indices.
-    int rightIdx;
-    int leftIdx;
-    
-    if( invertIndexA < invertIndexB )
-    {
-      rightIdx = invertIndexA;
-      leftIdx = invertIndexB;
-    }
-    else
-    {
-      rightIdx = invertIndexB;
-      leftIdx = invertIndexA;
-    }
-    
-    while( rightIdx < leftIdx )
-    {
-      int temp = neighborGarbageBinAllocation[rightIdx];
-      neighborGarbageBinAllocation[rightIdx] = neighborGarbageBinAllocation[leftIdx];
-      neighborGarbageBinAllocation[leftIdx] = temp;
-      rightIdx++;
-      leftIdx--;
+    if( m_garbageBinAllocation.length > 1 ) {
+      // Generate two indices to invert.
+      int invertIndexA = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      int invertIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      
+      while( invertIndexB == invertIndexA )
+      {
+        invertIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      }
+      
+      // Invert at two indices.
+      int rightIdx;
+      int leftIdx;
+      
+      if( invertIndexA < invertIndexB )
+      {
+        rightIdx = invertIndexA;
+        leftIdx = invertIndexB;
+      }
+      else
+      {
+        rightIdx = invertIndexB;
+        leftIdx = invertIndexA;
+      }
+      
+      while( rightIdx < leftIdx )
+      {
+        int temp = neighborGarbageBinAllocation[rightIdx];
+        neighborGarbageBinAllocation[rightIdx] = neighborGarbageBinAllocation[leftIdx];
+        neighborGarbageBinAllocation[leftIdx] = temp;
+        rightIdx++;
+        leftIdx--;
+      }
     }
     
     return new MRTASolutionModel( m_garbageBins, m_garbageClusterDataElements, m_nearestServiceStationTable, neighborGarbageBinAllocation );
@@ -307,38 +324,55 @@ public class MRTASolutionModel implements SolutionModel
       neighborGarbageBinAllocation[idx] = m_garbageBinAllocation[idx];
     }
     
-    // Generate two indices to scramble.
-    int scrambleIndexA = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    int scrambleIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    
-    while( scrambleIndexB == scrambleIndexA )
-    {
-      scrambleIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
-    }
-    
-    // Scramble at two indices.
-    int lowerIndex;
-    int upperIndex;
-    
-    if( scrambleIndexA < scrambleIndexB )
-    {
-      lowerIndex = scrambleIndexA;
-      upperIndex = scrambleIndexB;
-    }
-    else
-    {
-      lowerIndex = scrambleIndexB;
-      upperIndex = scrambleIndexA;
-    }
-    
-    for( int idx = lowerIndex; idx <= upperIndex; idx++ )
-    {
-      int swapIndex = m_randomNumberGenerator.nextInt( upperIndex - lowerIndex + 1 ) + lowerIndex;
-      int temp = neighborGarbageBinAllocation[idx];
-      neighborGarbageBinAllocation[idx] = neighborGarbageBinAllocation[swapIndex];
-      neighborGarbageBinAllocation[swapIndex] = temp;
+    if( m_garbageBinAllocation.length > 1 ) {
+      // Generate two indices to scramble.
+      int scrambleIndexA = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      int scrambleIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      
+      while( scrambleIndexB == scrambleIndexA )
+      {
+        scrambleIndexB = m_randomNumberGenerator.nextInt( neighborGarbageBinAllocation.length );
+      }
+      
+      // Scramble at two indices.
+      int lowerIndex;
+      int upperIndex;
+      
+      if( scrambleIndexA < scrambleIndexB )
+      {
+        lowerIndex = scrambleIndexA;
+        upperIndex = scrambleIndexB;
+      }
+      else
+      {
+        lowerIndex = scrambleIndexB;
+        upperIndex = scrambleIndexA;
+      }
+      
+      for( int idx = lowerIndex; idx <= upperIndex; idx++ )
+      {
+        int swapIndex = m_randomNumberGenerator.nextInt( upperIndex - lowerIndex + 1 ) + lowerIndex;
+        int temp = neighborGarbageBinAllocation[idx];
+        neighborGarbageBinAllocation[idx] = neighborGarbageBinAllocation[swapIndex];
+        neighborGarbageBinAllocation[swapIndex] = temp;
+      }
     }
     
     return new MRTASolutionModel( m_garbageBins, m_garbageClusterDataElements, m_nearestServiceStationTable, neighborGarbageBinAllocation );
+  }
+  
+  public LinkedHashMap<Integer, Integer> getMappedAllocation() {
+    LinkedHashMap<Integer, Integer> mappedAllocation = new LinkedHashMap<Integer, Integer>();
+    
+    for( int i = 0; i < m_garbageBinAllocation.length; ++i ) {
+      int garbageBinID = m_garbageBins.get( i ).getGarbageBinID();
+      
+      if( m_garbageBinAllocation[i] != -1 ) {
+        int clusterID = m_garbageClusterDataElements.get( m_garbageBinAllocation[i] ).getGarbageCluster().getClusterID();
+        mappedAllocation.put( garbageBinID,  clusterID );
+      }
+    }
+    
+    return mappedAllocation;
   }
 }
