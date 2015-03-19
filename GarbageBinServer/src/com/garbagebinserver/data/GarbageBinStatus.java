@@ -124,16 +124,17 @@ public class GarbageBinStatus {
 		this.volume = volume;
 		this.maxDepth = maxDepth;
 		this.currentDepth = currentDepth;
-		this.capacity = calculateCapacity(maxDepth, currentDepth);
+		this.capacity = calculateCapacity(volume, maxDepth, currentDepth);
 		this.ip = ip;
 		this.port = port;
 		this.timeStamp = timeStamp;
 		this.error = error;
 	}
 	
-	private static double calculateCapacity(double maxDepth, double currentDepth)
+	private static double calculateCapacity(double garbageBinMaxVolume, double garbageBinMaxDepth, double garbageBinCurrentDepth)
 	{
-		return (currentDepth/maxDepth)*100;
+	    Double garbageBinPercentFreeVolume = ( garbageBinMaxDepth - garbageBinCurrentDepth ) * 100 / garbageBinMaxDepth;
+		return garbageBinPercentFreeVolume;
 	}
 	
 	public static GarbageBinStatus getStatusObjectFromJsonObjectMap(Map<Object, Object> jsonStatusMap)
