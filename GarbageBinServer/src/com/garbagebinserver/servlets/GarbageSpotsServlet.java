@@ -82,6 +82,7 @@ public class GarbageSpotsServlet extends HttpServlet {
 					    
 					    garbageSpot.put("id", results.getInt("id"));
 					    garbageSpot.put("name", results.getString("name"));
+					    garbageSpot.put("description", results.getString("description"));
 					    garbageSpot.put("latitude", results.getDouble("latitude"));
 					    garbageSpot.put("longitude", results.getDouble("longitude"));
 					    

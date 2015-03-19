@@ -58,6 +58,7 @@
           <tr>
               <th>Id</th>
               <th>Name</th>
+              <th>Description</th>
               <th>Latitude</th>
               <th>Longitude</th>
           </tr>

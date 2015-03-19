@@ -13,11 +13,15 @@ function displayAllSpots( object, event ) {
 		var response = jsonDataResponseObject.response;
 		$("#spotTableRows").empty();
 		$("#spotTableRows").append('<tr></tr>');
-		 
+		
+		console.log("-------------");
+		console.log(response);
+		
 		for (i=0;i<response.allSpots.length; i++) {
 			$('#spotTableRows tr:last').after(
 			'<tr><td>' + response.allSpots[i].id+
 			'</td><td>' + response.allSpots[i].name +
+			'</td><td>' + response.allSpots[i].description +
 			'</td><td>' + response.allSpots[i].latitude +
 			'</td><td>' + response.allSpots[i].longitude +
 			'</td></tr>'

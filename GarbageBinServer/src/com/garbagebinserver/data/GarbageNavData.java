@@ -128,11 +128,10 @@ public class GarbageNavData {
     // TEMP
     m_nextGarbageSpotID++;
     
-    /*
     //Doing DB stuff here
     Connection conn = null;
     //Create a new SQL test statement
-    String constructing = "INSERT INTO `garbagespot`(`id`, `name`, `latitude`, `longitude`) "
+    String constructing = "INSERT INTO `garbagespot`(`name`, `description`, `latitude`, `longitude`) "
             + "VALUES (?,?,?,?)";
     
     try {
@@ -144,8 +143,8 @@ public class GarbageNavData {
 
             //Perform a query
             PreparedStatement preparedStatement = conn.prepareStatement(constructing);
-            preparedStatement.setInt(1, garbageSpotID);
-            preparedStatement.setString(2, name);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, description);
             preparedStatement.setDouble(3, latitude);
             preparedStatement.setDouble(4, longitude);
             preparedStatement.executeUpdate();
@@ -159,7 +158,6 @@ public class GarbageNavData {
         // TODO Auto-generated catch block
         e1.printStackTrace();
     }
-    */
     return garbageSpotID;
   }
   
