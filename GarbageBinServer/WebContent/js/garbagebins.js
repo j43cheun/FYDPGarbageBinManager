@@ -128,6 +128,26 @@ function addAccordianRow(jsonStatus, colspan, tableToAddTo){
 	return newRow;
 }
 
+//Returns true if the garbage bin status has error set to true.
+function hasError(jsonStatus){
+	if (jsonStatus.hasOwnProperty('error')){
+		var errorValue = jsonStatus.error;
+	}
+	else{
+		var errorValue = false;
+	}
+	return errorValue;
+}
+
+//Returns true if the garbage bin status indicates a full garbage bin.
+//We define full to be 90% full.
+function isFull(jsonStatus){
+	if (jsonStatus.capacity < 10.0){
+		return true;
+	} 
+	return false;
+}
+
 /**
  * This function is called repeatedly by a timer. This function will make a get call to the
  * garbage bin server backend and retrieve whatever trash information the server has.
@@ -156,18 +176,33 @@ function requestUpdateFromBackEnd(){
 			var currentlyOpen = false;
 			var jsonStatus = jsonDataResponseObject[binID];
 			var str_binID = binID.toString();
-			var existingRow = $('#' + str_binID);
+			//var existingRow = $('#' + str_binID);
 			var newRow = addTableRow(jsonStatus, binStatusTableFormat, tableRef);
 			newRow.setAttribute('id',binID.toString());
 			newRow.setAttribute('data-toggle', "collapse");
 			newRow.setAttribute('data-target', ".accordion_" + str_binID);
 			newRow.setAttribute('data-parent', "#parentDiv");
-			newRow.setAttribute('class', "accordion-toggle");
+			
+			//This is the class the row will get set to.
+			var classString = "accordion-toggle";
+			
+			if (hasError(jsonStatus)){
+				classString = classString + " danger";
+			}
+			else{
+				if (isFull(jsonStatus)){
+					classString = classString + " warning";
+				}
+			}
+			
+			newRow.setAttribute('class', classString);
+			
 			var contactInfo = {
 					'ip':jsonStatus.ip,
 					'port':jsonStatus.port
 			}
 			console.log(contactInfo);
+			
 			addStatusUpdateButton(binID, contactInfo, newRow);
 			addAccordianRow(jsonStatus, binStatusTableFormat.length, tableRef);
 		}
