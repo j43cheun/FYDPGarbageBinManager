@@ -2,7 +2,13 @@ package com.garbagebinserver.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
@@ -212,11 +218,14 @@ public class GarbageMapServlet extends HttpServlet {
 	  
 	  ArrayList<GarbageClusterData> gbClusterDataElements = new ArrayList<GarbageClusterData>();
 	  
+	  Calendar calendarNow = Calendar.getInstance();
+	  int hour = calendarNow.get(Calendar.HOUR_OF_DAY);
 	  for( KMeansCluster cluster : GarbageNavData.getInstance().getAvailableClusters() ) {
 	    double totalAvgGarbageVolumeProduced = 0;
 	    
 	    for( Coordinates coordinates : cluster.getClusterPoints() ) {
 	      GarbageSpot garbageSpot = ( GarbageSpot ) coordinates;
+	      totalAvgGarbageVolumeProduced += computeSpotAverage(garbageSpot.getGarbageSpotID(), hour);
 	      // TODO: Populate garbage volume data from database.
 	    }
 	    
@@ -244,6 +253,51 @@ public class GarbageMapServlet extends HttpServlet {
 	  }
 	}
 	
+	protected double computeSpotAverage( int garbageSpotId, int hour ) {
+		int total = 0;
+		int counter = 0;
+		
+		Connection conn = null;
+		Statement statement = null;
+		ResultSet results; 
+		//Create a new SQL test statement
+		System.out.println("Doing this for spot: " + garbageSpotId);
+		String constructing = "SELECT `volume` FROM `garbagespothistory` WHERE (SELECT HOUR(registration_date))=" + hour + " AND garbage_spot_id="+garbageSpotId;
+	
+		try {
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			//Set up the connection to the database on port 3306 (default)
+			//To database trash
+			//With username root and password fydp
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/trash", "root", "");
+	
+			//Perform a query
+			statement = conn.createStatement();
+			results = statement.executeQuery(constructing);
+			while (results.next()) {
+				total+=results.getInt("volume");
+				counter++;
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		double output = 0;
+		if (counter==0) {
+			output = 0;
+		}
+		else {
+			output = (double)total/(double)counter;
+		}
+		return output;
+	}
 	protected void getGarbageSpots( JSONObject jsonDataResponseObject ) {
 	  LinkedHashSet<Coordinates> garbageSpotCoordinates = GarbageNavData.getInstance().getAllGarbageSpots();
 	  
