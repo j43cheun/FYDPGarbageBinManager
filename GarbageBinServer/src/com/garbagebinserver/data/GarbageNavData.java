@@ -28,7 +28,7 @@ public class GarbageNavData {
   // Temporarily keeps track of garbage clusters. Do not place in database.
   private int m_nextGarbageClusterID;
   
-  // Keeps track of garbage spots and garbage clusteres.
+  // Keeps track of garbage spots and garbage clusters.
   private LinkedHashMap<Integer, GarbageSpot> m_garbageSpotTable;
   private LinkedHashMap<Integer, KMeansCluster> m_kmeansClusterTable;
   
@@ -84,8 +84,6 @@ public class GarbageNavData {
 		    		results.getDouble("latitude"), results.getDouble("longitude"), results.getString("description"));
 		    m_garbageSpotTable.put(results.getInt("id"), spot);	
 		}
-		finalObject.put("allSpots", allSpots);
-		
 	} catch (SQLException e) {
 		e.printStackTrace();
 	}
@@ -247,6 +245,10 @@ public class GarbageNavData {
     }
     
     return clusters;
+  }
+  
+  public Integer getAssignedClusterID( int garbageBinID ) {
+    return m_allocationTable.get( garbageBinID );
   }
   
   public void removeAvailableCluster( int clusterID ) {

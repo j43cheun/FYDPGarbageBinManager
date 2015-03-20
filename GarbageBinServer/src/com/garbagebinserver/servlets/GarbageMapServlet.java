@@ -296,26 +296,33 @@ public class GarbageMapServlet extends HttpServlet {
 	    Double garbageBinCurrentVolume = ( garbageBinMaxDepth - garbageBinCurrentDepth ) * garbageBinMaxVolume / garbageBinMaxDepth;
 	    Double garbageBinPercentFreeVolume = garbageBinCurrentDepth * 100 / garbageBinMaxDepth;
 	    
-	    GPSCoordinates garbageBinLocation = garbageBinStatus.getCoordinate();
-	    
-	    String garbageBinIP = garbageBinStatus.getIp();
-	    
-	    garbageBinJSONObject.put( "garbageBinID", garbageBinID );
-	    garbageBinJSONObject.put( "garbageBinMaxVolume", garbageBinMaxVolume );
-	    garbageBinJSONObject.put( "garbageBinCurrentVolume", garbageBinCurrentVolume );
-	    garbageBinJSONObject.put( "garbageBinPercentFreeVolume", garbageBinPercentFreeVolume );
-	    
-	    garbageBinJSONObject.put( "maxDepth", garbageBinMaxDepth );
-	    garbageBinJSONObject.put( "currentDepth", garbageBinCurrentDepth );
-	    
-	    garbageBinJSONObject.put( "latitude", garbageBinLocation.getLatitude() );
-	    garbageBinJSONObject.put( "longitude", garbageBinLocation.getLongitude() );
-	    garbageBinJSONObject.put( "IP", garbageBinIP );
-	    
-	    // TODO: Display assigned garbage spot.
-	    
-	    String garbageBinJSONString = JSONObject.toJSONString( garbageBinJSONObject );
-	    jsonDataResponseObject.put( garbageBinID, garbageBinJSONString );
+	    if( garbageBinPercentFreeVolume > 10 ) {
+	      GPSCoordinates garbageBinLocation = garbageBinStatus.getCoordinate();
+	        
+	      String garbageBinIP = garbageBinStatus.getIp();
+	      
+	      garbageBinJSONObject.put( "garbageBinID", garbageBinID );
+	      garbageBinJSONObject.put( "garbageBinMaxVolume", garbageBinMaxVolume );
+	      garbageBinJSONObject.put( "garbageBinCurrentVolume", garbageBinCurrentVolume );
+	      garbageBinJSONObject.put( "garbageBinPercentFreeVolume", garbageBinPercentFreeVolume );
+	      
+	      garbageBinJSONObject.put( "maxDepth", garbageBinMaxDepth );
+	      garbageBinJSONObject.put( "currentDepth", garbageBinCurrentDepth );
+	      
+	      garbageBinJSONObject.put( "latitude", garbageBinLocation.getLatitude() );
+	      garbageBinJSONObject.put( "longitude", garbageBinLocation.getLongitude() );
+	      garbageBinJSONObject.put( "IP", garbageBinIP );
+	      
+	      Integer assignedClusterID = null;
+	      if( GarbageNavData.getInstance().getAssignedClusterID( garbageBinID.intValue() ) != null ) {
+	        assignedClusterID = GarbageNavData.getInstance().getAssignedClusterID( garbageBinID.intValue() );
+	      }
+	      
+	      garbageBinJSONObject.put( "clusterID", assignedClusterID );
+	      
+	      String garbageBinJSONString = JSONObject.toJSONString( garbageBinJSONObject );
+	      jsonDataResponseObject.put( garbageBinID, garbageBinJSONString );
+	    }
 	  }
 	}
 	

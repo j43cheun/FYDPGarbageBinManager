@@ -37,6 +37,10 @@ function GarbageCluster( garbageClusterID, gmaps_marker ) {
   this.gmaps_marker = gmaps_marker;
 }
 
+GarbageCluster.prototype.getClusterMarker = function() {
+  return this.gmaps_marker;
+}
+
 function GarbageBin( garbageBinID, gmaps_marker, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, IP, clusterID, gmaps_infoWindow ) {
   this.garbageBinID = garbageBinID;
   this.gmaps_marker = gmaps_marker;
@@ -49,63 +53,64 @@ function GarbageBin( garbageBinID, gmaps_marker, garbageBinMaxVolume, garbageBin
 }
 
 GarbageBin.prototype.setClusterID = function( clusterID ) {
-  this.clusterID = clusterID;
-  
-  var gmaps_contentString = 
-    '<div id="content">' +
-    '<h5>Garbage Bin</h5>' +
-    '<table class="table">' +
-    '<tbody>' +
-    '<tr>' +
-    '<td>ID</td>' +
-    '<td>' + this.garbageBinID + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<tr>' +
-    '<td>IP Address</td>' +
-    '<td>' + this.IP + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Latitude, Longitude</td>' +
-    '<td>' + this.gmaps_marker.getPosition().toUrlValue() + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Container Volume</td>' +
-    '<td>' + this.garbageBinMaxVolume + ' L</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Garbage Volume</td>' +
-    '<td>' + this.garbageBinCurrentVolume + ' L</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Percent Remaining Space</td>' +
-    '<td>' + this.garbageBinPercentFreeVolume + '%</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Patrol Cluster</td>' +
-    '<td>' + 
-    '<button type="submit" class="btn btn-primary">' + 
-    this.clusterID +
-    '</button>' +
-    '</td>' +
-    '</tr>' +
-    '</tbody>' +
-    '</table>' +
-    '</div>';
-  
-  this.gmaps_infoWindow.setContent( gmaps_contentString );
+  if( clusterID != null ) {
+    this.clusterID = clusterID;
+    
+    var gmaps_contentString = 
+      '<div id="content">' +
+      '<h5>Garbage Bin</h5>' +
+      '<table class="table">' +
+      '<tbody>' +
+      '<tr>' +
+      '<td>ID</td>' +
+      '<td>' + this.garbageBinID + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<tr>' +
+      '<td>IP Address</td>' +
+      '<td>' + this.IP + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Latitude, Longitude</td>' +
+      '<td>' + this.gmaps_marker.getPosition().toUrlValue() + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Container Volume</td>' +
+      '<td>' + this.garbageBinMaxVolume + ' L</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Garbage Volume</td>' +
+      '<td>' + this.garbageBinCurrentVolume + ' L</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Percent Remaining Space</td>' +
+      '<td>' + this.garbageBinPercentFreeVolume + '%</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Patrol Cluster</td>' +
+      '<td>' + 
+      '<button type="submit" class="btn btn-primary" onclick="identifyCluster( this, event )">' + 
+      this.clusterID +
+      '</button>' +
+      '</td>' +
+      '</tr>' +
+      '</tbody>' +
+      '</table>' +
+      '</div>';
+    
+    this.gmaps_infoWindow.setContent( gmaps_contentString );
+  }
 };
 
 // TODO: GarbageCluster
 
 var availableGarbageSpots = [];
-var availableGarbageBins = [];
-var availableGarbageClusters = [];
 
 var gmaps_serviceStationTable = {}
 var gmaps_garbageSpotTable = {}
 var gmaps_garbageClusterTable = {}
 var gmaps_garbageBinTable = {}
+var gmaps_allocationTable = {}
 
 function gmaps_initialize() {
   var gmaps_initialLatLng = new google.maps.LatLng( 43.4689, -80.5400 );
@@ -153,6 +158,7 @@ function gmaps_initialize() {
       var garbageBinMaxVolume = garbageBinJSONObject.garbageBinMaxVolume;
       var garbageBinCurrentVolume = garbageBinJSONObject.garbageBinCurrentVolume;
       var garbageBinPercentFreeVolume = garbageBinJSONObject.garbageBinPercentFreeVolume;
+      var clusterID = garbageBinJSONObject.clusterID;
       
       var latitude = garbageBinJSONObject.latitude;
       var longitude = garbageBinJSONObject.longitude;
@@ -161,7 +167,7 @@ function gmaps_initialize() {
       var IP = garbageBinJSONObject.IP;
       
       if( gmaps_latLng != null ) {
-        loadGarbageBin( garbageBinID, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, gmaps_latLng, IP );
+        loadGarbageBin( garbageBinID, garbageBinMaxVolume, garbageBinCurrentVolume, garbageBinPercentFreeVolume, gmaps_latLng, IP, clusterID );
       }
     }
   } );
@@ -287,6 +293,21 @@ function identifyInputCoordinates( element ) {
   }
 }
 
+function identifyCluster( object, event ) {
+  var clusterID = parseInt( object.innerText, 10 );
+  
+  if( gmaps_garbageClusterTable[clusterID] != null ) {
+    var gmaps_marker = gmaps_garbageClusterTable[clusterID].getClusterMarker();
+    
+    if( gmaps_marker.getAnimation() == null ) {
+      gmaps_marker.setAnimation( google.maps.Animation.BOUNCE );
+    }
+    else {
+      gmaps_marker.setAnimation( null );
+    }
+  }
+}
+
 function identifyFooterInputCoordinates( object, event ) {
   var footerCoordinatesInputElement = document.getElementById( 'footerCoordinatesInput' );
   identifyInputCoordinates( footerCoordinatesInputElement );
@@ -322,10 +343,16 @@ function loadAddGarbageSpotModal( object, event ) {
 }
 
 function loadAllocateGarbageBinsModal( object, event ) {
+  var numGarbageBins = Object.keys( gmaps_garbageBinTable ).length - Object.keys( gmaps_allocationTable ).length;
+  var numClusters = Object.keys( gmaps_garbageClusterTable ).length - Object.keys( gmaps_allocationTable ).length;
+  
+  var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
+  var tdAllocationNumGarbageClustersElement = document.getElementById( 'allocationNumGarbageClusters' );
+  
+  tdAllocationNumGarbageBinsElement.innerHTML = numGarbageBins;
+  tdAllocationNumGarbageClustersElement.innerHTML = numClusters;
   
   $( '#allocateGarbageBinsModal' ).modal( 'toggle' );
-  
-  
   
   return false;
 }
@@ -337,6 +364,8 @@ function loadClusterGarbageSpotsModal( object, event ) {
   if( numGarbageSpots > 0 ) {
     var tdClusterNumGarbageBinsElement = document.getElementById( 'clusterNumGarbageBins' );
     var tdClusterNumGarbageSpotsElement = document.getElementById( 'clusterNumGarbageSpots' );
+    var tdClusterNumServiceStationsElement = document.getElementById( 'clusterNumServiceStations' );
+    
     var clusterOption1RadioBtn = $( '#clusterOption1RadioBtn' );
     var clusterOption2RadioBtn = $( '#clusterOption2RadioBtn' );
 	
@@ -345,19 +374,24 @@ function loadClusterGarbageSpotsModal( object, event ) {
     clusterOption2RadioBtn.bootstrapSwitch( 'state', false );
     
     // Initialize statistics table to reflect statistics from OPTION1.
-    tdClusterNumGarbageBinsElement.innerHTML = 'TODO';
+    var numAvailableGarbageBins = Object.keys( gmaps_garbageBinTable ).length - Object.keys( gmaps_allocationTable ).length;
+    tdClusterNumGarbageBinsElement.innerHTML = numAvailableGarbageBins;
     tdClusterNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
+    tdClusterNumServiceStationsElement.innerHTML = Object.keys( gmaps_serviceStationTable ).length;
     
     // Set switch change event on OPTION1 radio. This event handles switch 
     // change for OPTION1 radio as well.
     clusterOption1RadioBtn.on( 'switchChange.bootstrapSwitch', function( event, data ) {
       if( clusterOption1RadioBtn.bootstrapSwitch( 'state' ) == true ) {
-        tdClusterNumGarbageBinsElement.innerHTML = 'TODO';
+        var numAvailableGarbageBins = Object.keys( gmaps_garbageBinTable ).length - Object.keys( gmaps_allocationTable ).length;
+        tdClusterNumGarbageBinsElement.innerHTML = numAvailableGarbageBins;
         tdClusterNumGarbageSpotsElement.innerHTML = availableGarbageSpots.length;
+        tdClusterNumServiceStationsElement.innerHTML = Object.keys( gmaps_serviceStationTable ).length;
       }
       else {
-        tdClusterNumGarbageBinsElement.innerHTML = 'TODO';
+        tdClusterNumGarbageBinsElement.innerHTML = Object.keys( gmaps_garbageBinTable ).length;
         tdClusterNumGarbageSpotsElement.innerHTML = Object.keys( gmaps_garbageSpotTable ).length;
+        tdClusterNumServiceStationsElement.innerHTML = Object.keys( gmaps_serviceStationTable ).length;
       }
     } );
     
@@ -474,6 +508,21 @@ function addGarbageSpot( object, event ) {
 }
 
 function allocateGarbageBins( object, event ) {
+  var alertString;
+  
+  var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
+  var tdAllocationNumGarbageClustersElement = document.getElementById( 'allocationNumGarbageClusters' );
+  
+  var numGarbageBins = parseInt( tdAllocationNumGarbageBinsElement.innerHTML, 10 );
+  var numClusters = parseInt( tdAllocationNumGarbageClustersElement.innerHTML, 10 );
+  
+  if( numGarbageBins == 0 || numClusters == 0 ) {
+    alertString = 
+      'Cannot allocate zero garbage bins or zero clusters!';
+    alert( alertString );
+    return false;
+  }
+  
   var initialTemperatureInput = document.getElementById( 'initialTemp' );
   var finalTemperatureInput = document.getElementById( 'finalTemp' );
   var coolingFactorInput = document.getElementById( 'coolingFactor' );
@@ -486,7 +535,42 @@ function allocateGarbageBins( object, event ) {
   var nestedIterations = parseInt( nestedIterationsInput.value, 10 );
   var maxIterations = parseInt( maxIterationsInput.value, 10 );
   
-  console.log( coolingFactor );
+  if( initialTemperature <= 0 ) {
+    alertString = 
+      'The initial temperature must be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  else if( finalTemperature <= 0 ) {
+    alertString = 
+      'The final temperature must be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  else if( coolingFactor <= 0 || coolingFactor >= 1 ) {
+    alertString = 
+      'The cooling factor must be between 0 and 1 exclusive!';
+    alert( alertString );
+    return false;
+  }
+  else if( nestedIterations <= 0 ) {
+    alertString = 
+      'The number of nested iterations must be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  else if( maxIterations <= 0 ) {
+    alertString = 
+      'The max number of iterations must be greater than 0!';
+    alert( alertString );
+    return false;
+  }
+  else if( finalTemperature > initialTemperature ) {
+    alertString = 
+      'The final temperature must be less than the initial temperature!';
+    alert( alertString );
+    return false;
+  }
   
   // TODO Argument checking
   
@@ -515,18 +599,18 @@ function allocateGarbageBins( object, event ) {
   return false;
 }
 
-function clusterGarbageBins( object, event ) {
-  var alertString;
+function clusterGarbageSpots( object, event ) {
+  var alertString;  
   
-  var tdAllocationNumGarbageBinsElement = document.getElementById( 'allocationNumGarbageBins' );
-  var tdAllocationNumGarbageSpotsElement = document.getElementById( 'allocationNumGarbageSpots' );
-  
-  var numGarbageClusters = document.getElementById( 'allocationNumClusters' ).value;
-  var numClusterIterations = document.getElementById( 'allocationNumClusterIterations' ).value;
+  var numGarbageClusters = document.getElementById( 'numClusters' ).value;
+  var numGarbageBins = parseInt( document.getElementById( 'clusterNumGarbageBins' ).innerHTML, 10 );
+  var numGarbageSpots = parseInt( document.getElementById( 'clusterNumGarbageSpots' ).innerHTML, 10 );
+  var numClusterIterations = document.getElementById( 'numClusterIterations' ).value;
   
   if( numGarbageClusters != parseInt( numGarbageClusters, 10 ) ) {
     alertString = 'The quantity of garbage clusters MUST be an integer!';
     alert( alertString );
+    return false;
   }
   else if( numGarbageClusters <= 0 ) {
     alertString = 'The quantity of garbage clusters MUST be greater than 0!';
@@ -536,6 +620,11 @@ function clusterGarbageBins( object, event ) {
   
   if( numClusterIterations != parseInt( numClusterIterations, 10 ) ) {
     alertString = 'The quantity of cluster iterations MUST be an integer!';
+    alert( alertString );
+    return false;
+  }
+  else if( numGarbageSpots <= 0 ) {
+    alertString = 'The quantity of garbage spots MUST be greater than 0!';
     alert( alertString );
     return false;
   }
@@ -551,7 +640,7 @@ function clusterGarbageBins( object, event ) {
   var jsonDataRequestObject = new Object();
   
   if( allocationOption1RadioBtn.bootstrapSwitch( 'state' ) == true ) {
-    if( numGarbageClusters > availableGarbageSpots.length ) {
+    if( numGarbageClusters > availableGarbageSpots.length || numGarbageClusters > numGarbageBins ) {
       alertString = 
         'The quantity of garbage clusters MUST be less than BOTH the quantity ' +
         'of available garbage spots and the quantity of available garbage bins!';
@@ -562,7 +651,7 @@ function clusterGarbageBins( object, event ) {
     allocationOption = 'OPTION1';
   }
   else {
-    if( numGarbageClusters > Object.keys( gmaps_garbageSpotTable ).length ) {
+    if( numGarbageClusters > Object.keys( gmaps_garbageSpotTable ).length || numGarbageClusters > numGarbageBins ) {
       alertString = 
         'The quantity of garbage clusters MUST be less than BOTH the quantity ' +
         'of garbage spots and the quantity of garbage bins!';
@@ -572,12 +661,20 @@ function clusterGarbageBins( object, event ) {
     
     allocationOption = 'OPTION2';
     
+    // Clear garbage clusters.
     for( var garbageClusterID in gmaps_garbageClusterTable ) {
       if( gmaps_garbageClusterTable.hasOwnProperty( garbageClusterID ) ) {
         var garbageCluster = gmaps_garbageClusterTable[garbageClusterID];
         var gmaps_marker = garbageCluster.gmaps_marker;
         gmaps_marker.setMap( null );
         delete gmaps_garbageClusterTable[garbageClusterID];
+      }
+    }
+    
+    // Clear allocation table.
+    for( var garbageBinID in gmaps_allocationTable ) {
+      if( gmaps_allocationTable.hasOwnProperty( garbageBinID ) ) {
+        delete gmaps_allocationTable[garbageBinID];
       }
     }
   }
@@ -594,12 +691,6 @@ function clusterGarbageBins( object, event ) {
   $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"computeGarbageClusters", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
     // NO JSON DATA RESPONSE OBJECT RETURNED!
   } );
-  
-  /*
-  $.getJSON( "/GarbageBinServer/garbagemapServlet", { action:"allocateGarbageBins", json:jsonDataRequestString }, function( jsonDataResponseObject ) {
-    // NO JSON DATA RESPONSE OBJECT RETURNED!
-  } );
-  */
   
   $.getJSON( "/GarbageBinServer/garbagemapServlet", { action: "getGarbageClusters" }, function( jsonDataResponseObject ) {
     for( var key in jsonDataResponseObject ) {
@@ -622,7 +713,6 @@ function clusterGarbageBins( object, event ) {
   }
   
   $( '#clusterGarbageSpotsModal' ).modal( 'hide' );
-  
   google.maps.event.trigger(gmaps_map, 'resize');
   
   return true;
@@ -666,7 +756,7 @@ function loadServiceStation( serviceStationID, name, gmaps_latLng, description )
   } );
   
   gmaps_marker.setIcon('../icons/home.png');
-  gmaps_garbageSpotTable[serviceStationID] = new ServiceStation( serviceStationID, name, gmaps_marker, description );
+  gmaps_serviceStationTable[serviceStationID] = new ServiceStation( serviceStationID, name, gmaps_marker, description );
 }
 
 function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbageClusterID ) {
@@ -703,6 +793,9 @@ function loadGarbageSpot( garbageSpotID, name, gmaps_latLng, description, garbag
   } );
   
   google.maps.event.addListener(gmaps_marker, 'click', function() {
+    if( gmaps_marker.getAnimation() != null ) {
+      gmaps_marker.setAnimation( null );
+    }
     gmaps_infoWindow.open( gmaps_map, gmaps_marker );
   } );
   
@@ -744,6 +837,9 @@ function loadGarbageCluster( garbageClusterID, gmaps_latLng ) {
   } );
   
   google.maps.event.addListener( gmaps_marker, 'click', function() {
+    if( gmaps_marker.getAnimation() != null ) {
+      gmaps_marker.setAnimation( null );
+    }
     gmaps_infoWindow.open( gmaps_map, gmaps_marker );
   } );
   
@@ -760,43 +856,92 @@ function loadGarbageBin( garbageBinID, garbageBinMaxVolume, garbageBinCurrentVol
     animation: google.maps.Animation.DROP
   } );
   
-  var gmaps_contentString = 
-    '<div id="content">' +
-    '<h5>Garbage Bin</h5>' +
-    '<table class="table">' +
-    '<tbody>' +
-    '<tr>' +
-    '<td>ID</td>' +
-    '<td>' + garbageBinID + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<tr>' +
-    '<td>IP Address</td>' +
-    '<td>' + IP + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Latitude, Longitude</td>' +
-    '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Container Volume</td>' +
-    '<td>' + garbageBinMaxVolume + ' L</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Garbage Volume</td>' +
-    '<td>' + garbageBinCurrentVolume + ' L</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Percent Remaining Space</td>' +
-    '<td>' + garbageBinPercentFreeVolume + '%</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td>Patrol Cluster</td>' +
-    '<td>' + 'None' + '</td>' +
-    '</tr>' +
-    '</tbody>' +
-    '</table>' +
-    '</div>';
+  var gmaps_contentString;
+  
+  if( clusterID == null ) {
+    gmaps_contentString = 
+      '<div id="content">' +
+      '<h5>Garbage Bin</h5>' +
+      '<table class="table">' +
+      '<tbody>' +
+      '<tr>' +
+      '<td>ID</td>' +
+      '<td>' + garbageBinID + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<tr>' +
+      '<td>IP Address</td>' +
+      '<td>' + IP + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Latitude, Longitude</td>' +
+      '<td>' + gmaps_latLng.toUrlValue() + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Container Volume</td>' +
+      '<td>' + garbageBinMaxVolume + ' L</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Garbage Volume</td>' +
+      '<td>' + garbageBinCurrentVolume + ' L</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Percent Remaining Space</td>' +
+      '<td>' + garbageBinPercentFreeVolume + '%</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Patrol Cluster</td>' +
+      '<td>' + 'None' + '</td>' +
+      '</tr>' +
+      '</tbody>' +
+      '</table>' +
+      '</div>';
+  }
+  else {
+    gmaps_contentString = 
+      '<div id="content">' +
+      '<h5>Garbage Bin</h5>' +
+      '<table class="table">' +
+      '<tbody>' +
+      '<tr>' +
+      '<td>ID</td>' +
+      '<td>' + garbageBinID + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<tr>' +
+      '<td>IP Address</td>' +
+      '<td>' + IP + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Latitude, Longitude</td>' +
+      '<td>' + gmaps_marker.getPosition().toUrlValue() + '</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Container Volume</td>' +
+      '<td>' + garbageBinMaxVolume + ' L</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Garbage Volume</td>' +
+      '<td>' + garbageBinCurrentVolume + ' L</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Percent Remaining Space</td>' +
+      '<td>' + garbageBinPercentFreeVolume + '%</td>' +
+      '</tr>' +
+      '<tr>' +
+      '<td>Patrol Cluster</td>' +
+      '<td>' + 
+      '<button type="submit" class="btn btn-primary" onclick="identifyCluster( this, event )">' + 
+      clusterID +
+      '</button>' +
+      '</td>' +
+      '</tr>' +
+      '</tbody>' +
+      '</table>' +
+      '</div>';
+    
+    gmaps_allocationTable[garbageBinID] = clusterID;
+  }
   
   var gmaps_infoWindow = new google.maps.InfoWindow( {
     content: gmaps_contentString,
@@ -804,6 +949,9 @@ function loadGarbageBin( garbageBinID, garbageBinMaxVolume, garbageBinCurrentVol
   } );
   
   google.maps.event.addListener( gmaps_marker, 'click', function() {
+    if( gmaps_marker.getAnimation() != null ) {
+      gmaps_marker.setAnimation( null );
+    }
     gmaps_infoWindow.open( gmaps_map, gmaps_marker );
   } );
   

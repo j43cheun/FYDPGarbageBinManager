@@ -130,29 +130,25 @@
           <h4 class="modal-title">Allocate Garbage BINS</h4>
         </div>
         <div class="modal-body">
-          <form role="form">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Statistics</th>
-                  <th></th>
-                </tr>
-              </thead>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Statistics</th>
+                <th></th>
+              </tr>
+            </thead>
               <tbody>
                 <tr>
                   <td>Garbage Bins</td>
-                  <td id="allocationNumGarbageBins" class="text-right">1</td>
+                  <td id="allocationNumGarbageBins" class="text-right">0</td>
                 </tr>
-                <tr>   
-                  <td>Garbage Spots</td>
-                  <td id="allocationNumGarbageSpots" class="text-right">144</td>
-                </tr>
-                <tr>   
-                  <td>Service Stations</td>
-                  <td id="allocationNumServiceStations" class="text-right">144</td>
+                <tr>
+                  <td>Garbage Clusters</td>
+                  <td id="allocationNumGarbageClusters" class="text-right">0</td>
                 </tr>
               </tbody>
-            </table>
+            </table>        
+          <form role="form">
             <p>Specify a positive real number as the initial temperature.</p>
             <div class="input-group" style="padding-bottom: 15px">
               <div class="input-group-addon">Initial Temperature</div>
@@ -204,7 +200,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title">Allocate Garbage Bins</h4>
+          <h4 class="modal-title">Cluster Garbage Spots</h4>
         </div>
         <div class="modal-body">
           <p>
@@ -261,7 +257,7 @@
             </p>
             <div class="input-group" style="padding-bottom: 15px">
               <div class="input-group-addon">Garbage Clusters</div>
-              <input type="number" class="form-control" id="allocationNumClusters" value="1">
+              <input type="number" class="form-control" id="numClusters" value="1">
             </div>
             <p>
               Specify the quantity of iterations to be performed by the 
@@ -269,12 +265,12 @@
             </p>
             <div class="input-group" style="padding-bottom: 15px">
               <div class="input-group-addon">Cluster Iterations</div>
-              <input type="number" class="form-control" id="allocationNumClusterIterations" value="1">
+              <input type="number" class="form-control" id="numClusterIterations" value="1">
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-warning" onclick="return clusterGarbageBins( this, event )">
+          <button type="button" class="btn btn-warning" onclick="return clusterGarbageSpots( this, event )">
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
             Cluster Garbage Spots
           </button>
