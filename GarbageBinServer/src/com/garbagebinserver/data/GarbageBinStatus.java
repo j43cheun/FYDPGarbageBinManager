@@ -76,6 +76,10 @@ public class GarbageBinStatus {
 		this.battery = battery;
 	}
 
+	/**
+	 * Note: Capacity refers to % volume free.
+	 * @return
+	 */
 	public double getCapacity() {
 		return capacity;
 	}
@@ -248,7 +252,12 @@ public class GarbageBinStatus {
 			returnJSONObject.put(GarbageBinJSONConstants.LOCATION, jsonLocation);
 		}
 		returnJSONObject.put(GarbageBinJSONConstants.BATTERY, battery);
+
+		returnJSONObject.put(GarbageBinJSONConstants.VOLUME, volume);
+		returnJSONObject.put(GarbageBinJSONConstants.MAX_DEPTH, maxDepth);
+		returnJSONObject.put(GarbageBinJSONConstants.CURRENT_DEPTH, currentDepth);
 		returnJSONObject.put(GarbageBinJSONConstants.CAPACITY, capacity);
+		
 		returnJSONObject.put(GarbageBinJSONConstants.IP, ip);
 		returnJSONObject.put(GarbageBinJSONConstants.PORT, port);
 		returnJSONObject.put(GarbageBinJSONConstants.ERROR, error);

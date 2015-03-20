@@ -95,10 +95,19 @@ function addStatusUpdateButton(binID, contactInfo, rowToModify){
  * @param jsonStatus
  * @returns {String}
  */
-function formatIPAndPort(jsonStatus){
+function formatAdditionalInfo(jsonStatus){
 	var IP = jsonStatus.ip;
 	var Port = jsonStatus.port;
-	var returnString = "IP: " + IP + "<br />" + "Port: " + Port.toString();
+	
+    var garbageBinCurrentDepth = jsonStatus.current_depth;
+    var garbageBinMaxDepth = jsonStatus.max_depth;
+    var garbageBinMaxVolume = jsonStatus.volume;
+    var garbageBinCurrentVolume = garbageBinCurrentDepth * garbageBinMaxVolume / garbageBinMaxDepth;
+
+	var volumeString = "Max Volume: " + garbageBinMaxVolume + "L <br /> Current Volume: " + garbageBinCurrentVolume + "L";
+	var ipString = "IP: " + IP + "<br />" + "Port: " + Port.toString();
+	var returnString = ipString + "<br />" + volumeString;
+	
 	return returnString;
 }
 
@@ -117,14 +126,27 @@ function addAccordianRow(jsonStatus, colspan, tableToAddTo){
 	var hiddenDiv = $('<div></div>').attr({
 		'class':"panel-collapse collapse accordion_" + strBinID,
 		'id':"accordion_" + strBinID
-	}).html(formatIPAndPort(jsonStatus));
+	}).html(formatAdditionalInfo(jsonStatus));
 	
 	var newRow = tableToAddTo.insertRow(tableToAddTo.rows.length);
 	newRow.setAttribute('id',"hiddenRow_" + strBinID);
+	
 	var newColumn = newRow.insertCell(0);
 	newColumn.setAttribute('colspan', colspan.toString());
 	newColumn.setAttribute('class', 'hiddenRow');
 	newColumn.appendChild(hiddenDiv.get(0));
+	
+	hiddenDiv = $('<div></div>').attr({
+		'class':"panel-collapse collapse accordion_" + strBinID
+	}).html(formatAdditionalInfo(jsonStatus));
+	
+	/*
+	var secondColumn = newRow.insertCell(1);
+	secondColumn.setAttribute('colspan', (colspan).toString() );
+	secondColumn.setAttribute('class', 'hiddenRow');
+	secondColumn.appendChild(hiddenDiv.get(0));
+	*/
+	
 	return newRow;
 }
 
