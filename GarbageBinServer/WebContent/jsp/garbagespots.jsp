@@ -22,6 +22,11 @@
       padding-top:50px;
       padding-bottom: 50px;
     }
+    .spacer{
+      margin-top: 4%;
+      margin-left: 9%;
+      margin-bottom: 1%;
+    }
   </style>
   
 </head>
@@ -47,11 +52,13 @@
       </div>
     </div>
   </div>
+  <div class="spacer">
  <div class="input-group-btn">
 	<button type="submit" class="btn btn-primary" onclick="displayAllSpots( this, event )">
     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
    		Current Garbage Spots
  	</button>
+</div>
 </div>
 <table class="table table-striped">
       <thead>

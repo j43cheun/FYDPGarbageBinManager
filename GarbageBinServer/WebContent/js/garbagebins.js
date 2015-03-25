@@ -60,7 +60,13 @@ function addTableRow(objectToRowify, tableFormat, tableToAddTo){
 	for(var i = 0; i < tableFormat.length; i++){
 		var newCell = newRow.insertCell(i);
 		console.log(objectToRowify);
-		var newText = document.createTextNode(getPropertyFromString(objectToRowify, tableFormat[i]));
+		if (i == 1){
+			var newText = document.createTextNode(getPropertyFromString(objectToRowify, tableFormat[i]) + "%");
+		}
+		else{
+			var newText = document.createTextNode(getPropertyFromString(objectToRowify, tableFormat[i]));
+		}
+		
 		newCell.appendChild(newText);
 	}
 	return newRow;
